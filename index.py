@@ -6,7 +6,7 @@ import os
 import tensorflow as tf
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.applications.efficientnet import preprocess_input
-
+from efficientnet_keras_transfer_learning import efficientnet
 
 app = Flask(__name__)
 

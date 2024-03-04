@@ -5,8 +5,8 @@ import numpy as np
 from PIL import Image
 from werkzeug.utils import secure_filename
 import os
-# Config
-model_file = "templates/26_Multi_1e-6_250_Unfreeze.h5"
+from efficientnet import layers
+import tensorflow as tf
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads/'
@@ -16,8 +16,21 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+# Config
+model_path = "templates/26_Multi_1e-6_250_Unfreeze.h5"
+from efficientnet.layers import Swish, DropConnect
+from efficientnet.model import ConvKernalInitializer
+from tensorflow.keras.utils import get_custom_objects
+
+get_custom_objects().update({
+    'ConvKernalInitializer': ConvKernalInitializer,
+    'Swish': Swish,
+    'DropConnect':DropConnect
+})
+
 # Load model
-model = load_model(model_file)
+model = tf.keras.models.load_model(model_path)
 model.make_predict_function()
 
 

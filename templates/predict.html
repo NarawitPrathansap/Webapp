@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Prediction Result</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .navbar {
+            background-color: #000;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            overflow: hidden;
+        }
+        .image-right-container {
+            text-align: right; /* Keeps the image aligned to the right */
+            margin-top: 20px;
+        }
+        img {
+            width: auto;
+            height: auto;
+            max-width: 100%;
+            max-height: 200px;
+        }
+        .chat-bubble-container {
+            display: flex;
+            justify-content: flex-end; /* Aligns the chat bubble to the right */
+            margin-top: 20px;
+        }
+        .chat-bubble {
+            background-color: #e5e5ea;
+            border-radius: 20px;
+            padding: 20px 30px; /* Increased padding for a larger bubble */
+            color: #000;
+            max-width: 80%;
+            text-align: left;
+            font-size: 18px; /* Increased font size */
+            margin-right: 10px; /* Optional: Adjusts the right margin for aesthetics */
+        }
+
+        a {
+            display: inline-block;
+            margin-top: 80px;
+            padding: 15px;
+            background-color: #000;
+            color: #fff;
+            text-decoration: none;
+            text-align: center;
+        }
+        h1 { 
+            font-size: 50px;
+            font-style: Italic;
+        }
+        .image-left-container {
+            text-align: left; 
+            margin-top: 20px;
+        }
+        .chat-bubble-container-left {
+            display: flex;
+            justify-content: flex-start; /* Aligns the chat bubble to the right */
+            margin-top: 20px;
+        }
+        .chat-bubble-left {
+            background-color: #e5e5ea;
+            border-radius: 20px;
+            padding: 20px 30px; /* Increased padding for a larger bubble */
+            color: #000;
+            max-width: 80%;
+            text-align: right;
+            font-size: 18px; /* Increased font size */
+            margin-right: 10px; /* Optional: Adjusts the right margin for aesthetics */
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <h1>DENTAI</h1>
+    </div>
+    
+    <div class="container">
+        <div class="image-right-container">
+             <img src="{{ image_url }}" alt="User Image" style="width:300; height:300; max-width:50%; max-height:100%; display:inline-block;">
+        </div>
+        
+        <!-- Chat Bubble Container for Right Alignment -->
+        <div class="chat-bubble-container">
+            <div class="chat-bubble">
+                <p><strong>Question:</strong> {{ question }}</p>
+            </div>
+        </div>
+        <div class="image-left-container">
+            <img src="https://raw.githubusercontent.com/NarawitPrathansap/AIPrototype2023/main/templates/358690a3-463a-4b32-be7a-295252a0e290.jpg" alt="User Image" style="width:300; height:300; max-width:50%; max-height:100%; display:inline-block;">
+        </div>
+        <div class="chat-bubble-container-left">
+            <div class="chat-bubble-left">
+                <p><strong>Answer:</strong> {{ answer }}</p>
+            </div>
+        </div>
+        
+        <a href="{{ url_for('index') }}">Try another prediction</a>
+    </div>
+</body>
+</html>

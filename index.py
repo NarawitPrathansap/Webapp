@@ -19,7 +19,7 @@ get_custom_objects().update({
     'Swish': Swish,
     'DropConnect':DropConnect
 })
-MODEL_PATH = '/home/Narawit/codes/Webapp/models/26_Multi_1e-6_250_Unfreeze.h5'
+MODEL_PATH = '/home/Narawit/codes/Webapp/templates/26_Multi_1e-6_250_Unfreeze.h5'
 
 model1 = tf.keras.models.load_model(MODEL_PATH)
 

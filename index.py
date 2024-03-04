@@ -1,14 +1,24 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory
+from werkzeug.utils import secure_filename
 from PIL import Image
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.applications.efficientnet import preprocess_input
+import os
 
 
 app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = 'uploads/'
 
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 from efficientnet.layers import Swish, DropConnect
 from efficientnet.model import ConvKernalInitializer
@@ -19,9 +29,8 @@ get_custom_objects().update({
     'Swish': Swish,
     'DropConnect':DropConnect
 })
-MODEL_PATH = '/home/Narawit/codes/Webapp/templates/26_Multi_1e-6_250_Unfreeze.h5'
 
-model1 = tf.keras.models.load_model(MODEL_PATH)
+model1 = tf.keras.models.load_model('/content/gdrive/MyDrive/Tooth_Shap_GPT/Deep_tooth/Model/Unflipped_Regress_Age(7-23)/Duo/26_Multi_1e-6_250_Unfreeze.h5')
 
 
 # Preparing and pre-processing the image

@@ -7,6 +7,9 @@ import tensorflow as tf
 from tensorflow.keras.preprocessing import image
 
 app = Flask(__name__)
+import sys
+sys.path.append('/Webapp/templates/26_Multi_1e-6_250_Unfreeze.h5')
+
 
 from efficientnet.layers import Swish, DropConnect
 from efficientnet.model import ConvKernalInitializer

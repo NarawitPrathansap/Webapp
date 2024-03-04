@@ -21,7 +21,7 @@ get_custom_objects().update({
 })
 MODEL_PATH = '/home/Narawit/codes/Webapp/models/26_Multi_1e-6_250_Unfreeze.h5'
 
-model1 = tf.keras.models.load_model('MODEL_PATH')
+model1 = tf.keras.models.load_model(MODEL_PATH)
 
 
 # Preparing and pre-processing the image

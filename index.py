@@ -8,8 +8,7 @@ from tensorflow.keras.applications.efficientnet import preprocess_input
 
 app = Flask(__name__)
 
-import sys
-sys.path.append('/root/WebApp/Web_app/templates/26_Multi_1e-6_250_Unfreeze.h5')
+
 
 from efficientnet.layers import Swish, DropConnect
 from efficientnet.model import ConvKernalInitializer
@@ -20,8 +19,9 @@ get_custom_objects().update({
     'Swish': Swish,
     'DropConnect':DropConnect
 })
+MODEL_PATH = '/home/Narawit/codes/Webapp/models/26_Multi_1e-6_250_Unfreeze.h5'
 
-model1 = tf.keras.models.load_model('/root/WebApp/templates/26_Multi_1e-6_250_Unfreeze.h5')
+model1 = tf.keras.models.load_model('MODEL_PATH')
 
 
 # Preparing and pre-processing the image

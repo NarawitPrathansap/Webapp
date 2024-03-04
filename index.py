@@ -5,27 +5,11 @@ from werkzeug.utils import secure_filename
 import os
 import tensorflow as tf
 from tensorflow.keras.preprocessing import image
-from tensorflow.keras.applications.efficientnet import preprocess_input
-from efficientnet_keras_transfer_learning import efficientnet
 
 app = Flask(__name__)
 
-import sys
-sys.path.append('/root/WebApp/templates/26_Multi_1e-6_250_Unfreeze.h5')
+model1 = tf.keras.models.load_model('WebApp/templates/26_Multi_1e-6_250_Unfreeze.h5')
 
-from efficientnet.layers import Swish, DropConnect
-from efficientnet.model import ConvKernalInitializer
-from tensorflow.keras.utils import get_custom_objects
-
-get_custom_objects().update({
-    'ConvKernalInitializer': ConvKernalInitializer,
-    'Swish': Swish,
-    'DropConnect':DropConnect
-})
-
-model1 = tf.keras.models.load_model('/root/WebApp/templates/26_Multi_1e-6_250_Unfreeze.h5')
-
-model1.make_predict_function()
 
 # Preparing and pre-processing the image
 def preprocess_img(img_path):

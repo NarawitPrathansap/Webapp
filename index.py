@@ -5,7 +5,7 @@ import numpy as np
 from PIL import Image
 from werkzeug.utils import secure_filename
 import os
-from efficientnet.layers import EfficientNetB0
+from efficientnet_keras_transfer_learning import layers
 import tensorflow as tf
 
 app = Flask(__name__)

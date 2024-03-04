@@ -8,7 +8,7 @@ from tensorflow.keras.preprocessing import image
 
 app = Flask(__name__)
 
-model1 = tf.keras.models.load_model('WebApp/templates/26_Multi_1e-6_250_Unfreeze.h5')
+model1 = tf.keras.models.load_model('/home/Narawit/codes/Webapp/templates/26_Multi_1e-6_250_Unfreeze.h5')
 
 
 # Preparing and pre-processing the image

@@ -5,6 +5,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.applications.efficientnet import preprocess_input
+from tensorflow.keras.applications import EfficientNetB0
 import os
 
 
@@ -30,7 +31,14 @@ get_custom_objects().update({
     'DropConnect':DropConnect
 })
 
-model1 = tf.keras.models.load_model('/content/gdrive/MyDrive/Tooth_Shap_GPT/Deep_tooth/Model/Unflipped_Regress_Age(7-23)/Duo/26_Multi_1e-6_250_Unfreeze.h5')
+# Get the directory of the current script
+current_directory = os.path.dirname(os.path.abspath(__file__))
+
+# Construct the path to the model file
+model_path = os.path.join(current_directory, 'Webapp', 'templates', '26_Multi_1e-6_250_Unfreeze.h5')
+
+# Load the model
+model1 = tf.keras.models.load_model(model_path)
 
 
 # Preparing and pre-processing the image

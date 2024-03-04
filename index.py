@@ -1,15 +1,15 @@
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory
-import numpy as np
+from flask import Flask, render_template, request
 from PIL import Image
-from werkzeug.utils import secure_filename
-import os
+import numpy as np
 import tensorflow as tf
 from tensorflow.keras.preprocessing import image
+from tensorflow.keras.applications.efficientnet import preprocess_input
+
 
 app = Flask(__name__)
-import sys
-sys.path.append('/Webapp/templates/26_Multi_1e-6_250_Unfreeze.h5')
 
+import sys
+sys.path.append('/root/WebApp/Web_app/templates/26_Multi_1e-6_250_Unfreeze.h5')
 
 from efficientnet.layers import Swish, DropConnect
 from efficientnet.model import ConvKernalInitializer
@@ -20,7 +20,8 @@ get_custom_objects().update({
     'Swish': Swish,
     'DropConnect':DropConnect
 })
-model1 = tf.keras.models.load_model('/Webapp/templates/26_Multi_1e-6_250_Unfreeze.h5')
+
+model1 = tf.keras.models.load_model('/root/WebApp/templates/26_Multi_1e-6_250_Unfreeze.h5')
 
 
 # Preparing and pre-processing the image

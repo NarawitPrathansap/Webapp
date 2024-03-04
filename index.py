@@ -1,24 +1,18 @@
-from keras.models import load_model
-from keras.utils import img_to_array
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory
 import numpy as np
 from PIL import Image
 from werkzeug.utils import secure_filename
 import os
-from efficientnet_keras_transfer_learning import layers
 import tensorflow as tf
+from tensorflow.keras.preprocessing import image
+from tensorflow.keras.applications.efficientnet import preprocess_input
+
 
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = 'uploads/'
 
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+import sys
+sys.path.append('/root/WebApp/templates/26_Multi_1e-6_250_Unfreeze.h5')
 
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-# Config
-model_path = "templates/26_Multi_1e-6_250_Unfreeze.h5"
 from efficientnet.layers import Swish, DropConnect
 from efficientnet.model import ConvKernalInitializer
 from tensorflow.keras.utils import get_custom_objects
@@ -29,22 +23,21 @@ get_custom_objects().update({
     'DropConnect':DropConnect
 })
 
-# Load model
-model = tf.keras.models.load_model(model_path)
-model.make_predict_function()
+model1 = tf.keras.models.load_model('/root/WebApp/templates/26_Multi_1e-6_250_Unfreeze.h5')
 
+model1.make_predict_function()
 
 # Preparing and pre-processing the image
 def preprocess_img(img_path):
     img = Image.open(img_path)
     img_resize = img.resize((224, 224))
-    img2arr = img_to_array(img_resize)
+    img2arr = image.img_to_array(img_resize)
     img_reshape = img2arr.reshape((1,) + img2arr.shape)
     return img_reshape
 
 
 def predict_result(img_array):
-    predictions = model.predict(img_array)
+    predictions = model1.predict(img_array)
     prediction_age = predictions[0]
     prediction_gender = predictions[1]
 
@@ -56,15 +49,9 @@ def predict_result(img_array):
     return age, gender
 
 
-
-
 @app.route('/')
 def index():
     return render_template('index.html')
-
-@app.route('/uploads/<filename>')
-def uploaded_file(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -127,10 +114,7 @@ def predict():
                                    #prediction_age2=prediction_age2, 
                                    #prediction_gender2=prediction_gender2)
             )
-        else:
-            print('File type not allowed')
-            return redirect(request.url)
-    return redirect(url_for('index'))
+
 
 
 if __name__ == "__main__":

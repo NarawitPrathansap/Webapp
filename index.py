@@ -35,7 +35,7 @@ get_custom_objects().update({
 current_directory = os.path.dirname(os.path.abspath(__file__))
 
 # Construct the path to the model file
-model_path = os.path.join(current_directory, 'Webapp', 'templates', '26_Multi_1e-6_250_Unfreeze.h5')
+model_path = os.path.join(current_directory, 'templates', '26_Multi_1e-6_250_Unfreeze.h5')
 
 # Load the model
 model1 = tf.keras.models.load_model(model_path)

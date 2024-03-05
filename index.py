@@ -39,7 +39,7 @@ yolo_model = torch.hub.load('ultralytics/yolov5', 'custom', path=weights_path)
 
 
 # Loading the enchanted model
-with open('../Webapp/templates/random_forest_model_real1.pkl', 'rb') as file:
+with open(f'../Webapp/templates/random_forest_model_real1.pkl', 'rb') as file:
  random_forest_model = pickle.load(file)
 
 tokenizer = BertTokenizer.from_pretrained('bert-base-multilingual-cased')

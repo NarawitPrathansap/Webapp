@@ -1,6 +1,4 @@
 from keras.preprocessing.image import load_img, img_to_array
-import pandas as pd
-import marshal
 import numpy as np
 import shap
 import tensorflow as tf
@@ -22,17 +20,6 @@ def process_input(images_directory):
 
     return np.array(background_data)
 
-
-from efficientnet.layers import Swish, DropConnect
-from efficientnet.model import ConvKernalInitializer
-from tensorflow.keras.utils import get_custom_objects
-
-get_custom_objects().update({
-    'ConvKernalInitializer': ConvKernalInitializer,
-    'Swish': Swish,
-    'DropConnect':DropConnect
-})
-
 def create_explainers(background_data):
     background_data_np = np.array(background_data)
     model_7_14 = tf.keras.models.load_model('../Webapp/templates/36_Multi_1e-5_500_Unfreeze.h5')
@@ -51,14 +38,17 @@ def create_explainers(background_data):
 
     return explainer7_14_age, explainer7_14_gender, explainer15_23_age, explainer15_23_gender
 
-# Define the base path for your images
-images_base_path = "../Webapp/images"
+if __name__ == "__main__":
+    # Ensure correct usage
+    if len(sys.argv) != 2:
+        print("Usage: python subprocess_shap.py <images_directory>")
+        sys.exit(1)
+        
+    # Define the base path for your images
+    images_base_path = sys.argv[1]
 
-# Create background data using the process_input function
-background_train = process_input(images_base_path)
+    # Create background data using the process_input function
+    background_train = process_input(images_base_path)
 
-# Serialize background data using marshal (optional)
-serialized_data = marshal.dumps(background_train)
-
-# Create explainers
-explainer7_14_age, explainer7_14_gender, explainer15_23_age, explainer15_23_gender = create_explainers(background_train)
+    # Create explainers
+    explainer7_14_age, explainer7_14_gender, explainer15_23_age, explainer15_23_gender = create_explainers(background_train)

@@ -57,7 +57,7 @@ def handle_question(question_text, tokenizer, bert_model, random_forest_model):
 
 if __name__ == '__main__':
     text = sys.argv[1] if len(sys.argv) > 1 else "This is a sample question."
-    random_forest_model = load('path/to/your/random_forest.joblib')  # Correct the path as needed
+    random_forest_model = load('../Webapp/templates/random_forest.joblib')  # Correct the path as needed
     tokenizer = BertTokenizer.from_pretrained('bert-base-multilingual-cased')
     bert_model = BertModel.from_pretrained('bert-base-multilingual-cased')
 

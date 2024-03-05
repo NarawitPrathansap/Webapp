@@ -15,7 +15,7 @@ from langdetect import detect
 from transformers import BertTokenizer, BertModel
 import pickle
 import torch
-
+from joblib import load
 
 
 
@@ -38,9 +38,10 @@ weights_path = '../Webapp/templates/best.pt'
 yolo_model = torch.hub.load('ultralytics/yolov5', 'custom', path=weights_path)
 
 
-# Loading the enchanted model
-with open(f'../Webapp/templates/random_forest_model_real1.pkl', 'rb') as file:
- random_forest_model = pickle.load(file)
+try:
+    random_forest_model = load('../Webapp/templates/random_forest_model_real1.pkl')
+except Exception as e:
+    print(f"Error loading the model: {e}")
 
 tokenizer = BertTokenizer.from_pretrained('bert-base-multilingual-cased')
 bert_model = BertModel.from_pretrained('bert-base-multilingual-cased')

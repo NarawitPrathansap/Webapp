@@ -18,6 +18,7 @@ import shap
 from keras.preprocessing.image import load_img, img_to_array
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 app = Flask(__name__)
 
 from efficientnet.layers import Swish, DropConnect
@@ -494,9 +495,10 @@ def predict():
 
         grayscale_image_pos = normalized_positive / 3.0
         grayscale_image_neg = normalized_neg / 3.0
+        print(grayscale_image_neg.shape)
+        grayscale_image_positive = np.mean(grayscale_image_pos, axis=-1)
+        grayscale_image_negative = np.mean(grayscale_image_neg, axis=-1)
 
-        grayscale_image_positive = np.mean(grayscale_image_pos, axis=4)
-        grayscale_image_negative = np.mean(grayscale_image_neg, axis=4)
 
         grayscale_image_positive = grayscale_image_positive.squeeze()
         grayscale_image_negative = grayscale_image_negative.squeeze()

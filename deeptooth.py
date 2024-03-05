@@ -255,10 +255,36 @@ def predict():
 
     # Calculate SHAP values
     shap_values = explainer15_23_gender.shap_values(reshaped_user_uploaded_image)
+    
+    grey = subprocess.run(['python', 'grayscale.py'], input=json.dumps(shap_values), capture_output=True, text=True)
+
+    # Check if we got output and parse it
+    if grey.stdout:
+        output_data = json.loads(grey.stdout)
+        grayscale_image_path = output_data.get('grayscale_image_path', "")
+        # Process grayscale_neg_thresholded and grayscale_pos_thresholded if needed
+    else:
+        grayscale_image_path = ""
+        print("Error running grayscale.py or no grayscale image generated")
+ 
+
+    # Call the YOLOv5 detection script as a subprocess
+    detect = subprocess.run(['python', 'yolo.py', img], capture_output=True, text=True)
+        # Assuming yolo.py writes a CSV file and outputs its path
+    if detect.stdout:
+        csv_path = detect.stdout.strip()  # Extract the CSV path from stdout
+    else:
+        csv_path = ""
+        print("Error running yolo.py or no CSV generated")
+
+    plot_yolo_greyscale_image = subprocess.run(['python', 'shap_yolo.py', img,csv_path,grayscale_image_path], capture_output=True, text=True)
+    
 
 
+    return render_template('predict.html', image_url=image_url, selected_image_url=selected_image_url, question=question, predicted_age=age_ans,predictions_gender=gender_ans,shap_values=shap_values,answer_true=answer
+                           img_url=url_for('uploaded_file', filename='output_' + filename))
+                           
 
-    return render_template('predict.html', image_url=image_url, selected_image_url=selected_image_url, question=question, predicted_age=age_ans,predictions_gender=gender_ans,shap_values=shap_values,answer_true=answer)
 
 
 

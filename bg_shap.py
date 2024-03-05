@@ -54,7 +54,3 @@ explainer7_14_gender = shap.GradientExplainer(model7_14_gender, background_train
 explainer15_23_age = shap.GradientExplainer(model15_23_age, background_train_np)
 explainer15_23_gender = shap.GradientExplainer(model15_23_gender, background_train_np)
 
-# Further processing or usage of shap_values can be added here
-
-if __name__ == '__main__':
-    app.run(debug=True)

@@ -16,7 +16,8 @@ import subprocess
 import json
 import shap
 from keras.preprocessing.image import load_img, img_to_array
-
+import pandas as pd
+import matplotlib.pyplot as plt
 app = Flask(__name__)
 
 from efficientnet.layers import Swish, DropConnect
@@ -111,6 +112,224 @@ explainer7_14_age = shap.GradientExplainer(model7_14_age, background_train_np)
 explainer7_14_gender = shap.GradientExplainer(model7_14_gender, background_train_np)
 explainer15_23_age = shap.GradientExplainer(model15_23_age, background_train_np)
 explainer15_23_gender = shap.GradientExplainer(model15_23_gender, background_train_np)
+
+def compute_iou(boxA, boxB):
+    # Determine the coordinates of the intersection rectangle
+    xA = max(boxA[0], boxB[0])
+    yA = max(boxA[1], boxB[1])
+    xB = min(boxA[2], boxB[2])
+    yB = min(boxA[3], boxB[3])
+
+    # Compute the area of intersection
+    interArea = max(0, xB - xA + 1) * max(0, yB - yA + 1)
+
+    # Compute the area of both the prediction and ground-truth rectangles
+    boxAArea = (boxA[2] - boxA[0] + 1) * (boxA[3] - boxA[1] + 1)
+    boxBArea = (boxB[2] - boxB[0] + 1) * (boxB[3] - boxB[1] + 1)
+
+    # Compute the intersection over union by taking the intersection
+    # area and dividing it by the sum of prediction + ground-truth
+    # areas - the interesection area
+    iou = interArea / float(boxAArea + boxBArea - interArea)
+
+    return iou
+
+def nms_per_class(df, iou_threshold=0.5):
+    # Initialize an empty DataFrame to store NMS results
+    df_nms = pd.DataFrame()
+
+    # Get unique class IDs
+    class_ids = df['class'].unique()
+
+    for class_id in class_ids:
+        # Filter detections by class
+        df_class = df[df['class'] == class_id].copy()
+
+        # Apply NMS
+        df_class_sorted = df_class.sort_values(by='confidence', ascending=False).reset_index(drop=True)
+        suppressed_indices = set()
+
+        for i in range(len(df_class_sorted)):
+            if i in suppressed_indices:
+                continue
+
+            for j in range(i+1, len(df_class_sorted)):
+                if j in suppressed_indices:
+                    continue
+
+                boxA = df_class_sorted.iloc[i][['xmin', 'ymin', 'xmax', 'ymax']]
+                boxB = df_class_sorted.iloc[j][['xmin', 'ymin', 'xmax', 'ymax']]
+
+                if compute_iou(boxA, boxB) > iou_threshold:
+                    suppressed_indices.add(j)
+
+        # Filter out suppressed detections
+        df_nms_class = df_class_sorted.drop(index=list(suppressed_indices)).reset_index(drop=True)
+
+        # Append results for this class to the main DataFrame
+        df_nms = pd.concat([df_nms, df_nms_class], ignore_index=True)
+
+    return df_nms
+
+
+
+def detect(image_path):
+    # Load the model
+    weights_path = '../Webapp/templates/best.pt'
+    yolo_model = torch.hub.load('ultralytics/yolov5', 'custom', path=weights_path)
+    results = yolo_model(image_path)
+    # Convert results to a pandas DataFrame
+    df_results = results.pandas().xyxyn[0]
+    # Apply NMS
+    df_nms_filtered = nms_per_class(df_results) 
+    # Convert NMS-filtered results to JSON and print
+    print(df_nms_filtered.to_json(orient="records"))
+
+    return df_nms_filtered
+def plot_bboxes_on_image_pos(image_path, df, grayscale_image, output_path):
+    selected_bboxes = []
+
+    # Load the original image
+    img = Image.open(image_path)
+    img_array = np.array(img)
+
+    # Get the image dimensions
+    image_width, image_height = img.size
+
+    # Create figure and axes
+    fig, ax = plt.subplots()
+
+    # Display the original image
+    ax.imshow(img)
+
+    # Overlay the grayscale image with transparency
+    ax.imshow(grayscale_image, cmap='Reds', alpha=0.5, extent=[0, image_width, image_height, 0])
+
+    # Iterate over rows in the DataFrame
+    for index, row in df.iterrows():
+        xmin, ymin, xmax, ymax = row['xmin'], row['ymin'], row['xmax'], row['ymax']
+        confidence, class_label,class_name = row['confidence'], row['class'],row['name']
+
+        # Convert coordinates to absolute values
+        abs_xmin = xmin * image_width
+        abs_ymin = ymin * image_height
+        abs_width = (xmax - xmin) * image_width
+        abs_height = (ymax - ymin) * image_height
+
+        # Map bounding box to the grayscale image
+        # Calculate the region of interest in the grayscale image
+        roi_xmin = int(xmin * grayscale_image.shape[1])
+        roi_ymin = int(ymin * grayscale_image.shape[0])
+        roi_xmax = int(xmax * grayscale_image.shape[1])
+        roi_ymax = int(ymax * grayscale_image.shape[0])
+
+        # Extract the region of interest from the grayscale image
+        roi = grayscale_image[roi_ymin:roi_ymax, roi_xmin:roi_xmax]
+
+        # Calculate the percentage of nonzero pixels
+        nonzero_percentage = np.count_nonzero(roi) / (roi.shape[0] * roi.shape[1])
+
+        # If the percentage of nonzero pixels exceeds 10%, collect the bounding box
+        if nonzero_percentage > 0.1:
+            # Add bounding box information to the selected_bboxes list
+            selected_bboxes.append({'xmin': abs_xmin, 'ymin': abs_ymin,'xmax': abs_xmin + abs_width, 'ymax': abs_ymin + abs_height,
+                                    'confidence': confidence, 'class': class_label,'name':class_name})
+
+            # Create a rectangle patch
+            rect = patches.Rectangle(
+                (abs_xmin, abs_ymin),
+                abs_width,
+                abs_height,
+                linewidth=2,
+                edgecolor='r',
+                facecolor='none'  # Set facecolor to 'none' for an unfilled rectangle
+            )
+
+            # Add the rectangle to the axes
+            ax.add_patch(rect)
+            # Add confidence and class label as text
+            #text = f'Class: {class_label}'
+            #\nConfidence: {confidence:.2f}'
+            #plt.text(abs_xmin, abs_ymin - 10, text, color='black', fontsize=8, bbox=dict(facecolor='white', alpha=0.5))
+
+
+    plt.savefig(output_path)
+    plt.close()
+
+    return selected_bboxes
+
+
+
+
+def plot_bboxes_on_image_neg(image_path, df, grayscale_image, output_path):
+    selected_bboxes = []
+
+    # Load the original image
+    img = Image.open(image_path)
+    img_array = np.array(img)
+
+    # Get the image dimensions
+    image_width, image_height = img.size
+
+    # Create figure and axes
+    fig, ax = plt.subplots()
+
+    # Display the original image
+    ax.imshow(img)
+
+    # Overlay the grayscale image with transparency
+    ax.imshow(grayscale_image, cmap='Blues', alpha=0.5, extent=[0, image_width, image_height, 0])
+
+    # Iterate over rows in the DataFrame
+    for index, row in df.iterrows():
+        xmin, ymin, xmax, ymax = row['xmin'], row['ymin'], row['xmax'], row['ymax']
+        confidence, class_label,class_name = row['confidence'], row['class'],row['name']
+
+        # Convert coordinates to absolute values
+        abs_xmin = xmin * image_width
+        abs_ymin = ymin * image_height
+        abs_width = (xmax - xmin) * image_width
+        abs_height = (ymax - ymin) * image_height
+
+        # Map bounding box to the grayscale image
+        # Calculate the region of interest in the grayscale image
+        roi_xmin = int(xmin * grayscale_image.shape[1])
+        roi_ymin = int(ymin * grayscale_image.shape[0])
+        roi_xmax = int(xmax * grayscale_image.shape[1])
+        roi_ymax = int(ymax * grayscale_image.shape[0])
+
+        # Extract the region of interest from the grayscale image
+        roi = grayscale_image[roi_ymin:roi_ymax, roi_xmin:roi_xmax]
+
+        # Calculate the percentage of nonzero pixels
+        nonzero_percentage = np.count_nonzero(roi) / (roi.shape[0] * roi.shape[1])
+
+        # If the percentage of nonzero pixels exceeds 10%, collect the bounding box
+        if nonzero_percentage > 0.1:
+            # Add bounding box information to the selected_bboxes list
+            selected_bboxes.append({'xmin': abs_xmin, 'ymin': abs_ymin,'xmax': abs_xmin + abs_width, 'ymax': abs_ymin + abs_height,
+                                    'confidence': confidence, 'class': class_label,'name':class_name})
+
+            # Create a rectangle patch
+            rect = patches.Rectangle(
+                (abs_xmin, abs_ymin),
+                abs_width,
+                abs_height,
+                linewidth=2,
+                edgecolor='b',
+                facecolor='none'  # Set facecolor to 'none' for an unfilled rectangle
+            )
+
+            # Add the rectangle to the axes
+            ax.add_patch(rect)
+            # Add confidence and class label as text
+            #text = f'Class: {class_label}'
+            #\nConfidence: {confidence:.2f}'
+           #plt.text(abs_xmin, abs_ymin - 10, text, color='black', fontsize=8, bbox=dict(facecolor='white', alpha=0.5))
+    plt.savefig(output_path)
+    plt.close()
+
+    return selected_bboxes
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -241,50 +460,81 @@ def predict():
         if prediction_class == 4:
             answer = "Sorry, no answer available for this question."
         
-    # Assuming `background_user_upload_image` is the path to the user uploaded image
-    background_user_upload_image = img
+        # Assuming `background_user_upload_image` is the path to the user uploaded image
+        background_user_upload_image = img
 
-    # Load the user uploaded image
-    user_uploaded_image = load_img(background_user_upload_image, target_size=(224, 224))
+        # Load the user uploaded image
+        user_uploaded_image = load_img(background_user_upload_image, target_size=(224, 224))
 
-    # Preprocess the image
-    preprocessed_user_uploaded_image = img_to_array(user_uploaded_image) / 255.0
+        # Preprocess the image
+        preprocessed_user_uploaded_image = img_to_array(user_uploaded_image) / 255.0
 
-    # Reshape the image to match the model input shape
-    reshaped_user_uploaded_image = np.expand_dims(preprocessed_user_uploaded_image, axis=0)
+        # Reshape the image to match the model input shape
+        reshaped_user_uploaded_image = np.expand_dims(preprocessed_user_uploaded_image, axis=0)
 
-    # Calculate SHAP values
-    shap_values = explainer15_23_gender.shap_values(reshaped_user_uploaded_image)
+        # Calculate SHAP values
+        shap_values = explainer15_23_gender.shap_values(reshaped_user_uploaded_image)
     
+        shap_values_1 = np.array(shap_values)
 
-    grey = subprocess.run(['python', 'grayscale.py'], input=json.dumps(shap_values), capture_output=True, text=True, check=True)
+        # Perform the processing as before
+        image_array = shap_values_1[0]
+        positive = np.where(image_array >= 0, image_array, 0)
+        negative = np.where(image_array < 0, image_array, 0)
+        negative_aps = np.abs(negative)
 
-    # Parse the output JSON from grayscale.py
-    if grey.stdout:
-        output_data = json.loads(grey.stdout)
-        grayscale_pos_thresholded = output_data['grayscale_pos_thresholded']
-        grayscale_neg_thresholded = output_data['grayscale_neg_thresholded']
-        # Now you can use grayscale_pos_thresholded and grayscale_neg_thresholded as needed
-    else:
-        print("No output received from grayscale.py")
- 
+        flattened_array_pos = positive.flatten()
+        flattened_array_neg = negative_aps.flatten()
 
-    # Call the YOLOv5 detection script as a subprocess
-    detect = subprocess.run(['python', 'yolo.py', img], capture_output=True, text=True)
-        # Assuming yolo.py writes a CSV file and outputs its path
-    if detect.stdout:
-        csv_path = detect.stdout.strip()  # Extract the CSV path from stdout
-    else:
-        csv_path = ""
-        print("Error running yolo.py or no CSV generated")
+        normalized_array_pos = (flattened_array_pos - np.min(flattened_array_pos)) / (np.max(flattened_array_pos) - np.min(flattened_array_pos))
+        normalized_array_neg = (flattened_array_neg - np.min(flattened_array_neg)) / (np.max(flattened_array_neg) - np.min(flattened_array_neg))
 
-    plot_yolo_greyscale_image = subprocess.run(['python', 'shap_yolo.py', img,csv_path,grayscale_image_path], capture_output=True, text=True)
-    
+        normalized_positive = normalized_array_pos.reshape(positive.shape)
+        normalized_neg = normalized_array_neg.reshape(negative_aps.shape)
+
+        grayscale_image_pos = normalized_positive / 3.0
+        grayscale_image_neg = normalized_neg / 3.0
+
+        grayscale_image_positive = np.mean(grayscale_image_pos, axis=4)
+        grayscale_image_negative = np.mean(grayscale_image_neg, axis=4)
+
+        grayscale_image_positive = grayscale_image_positive.squeeze()
+        grayscale_image_negative = grayscale_image_negative.squeeze()
+
+        percentile_95_pos = np.percentile(grayscale_image_positive, 95)
+        percentile_95_neg = np.percentile(grayscale_image_negative, 95)
+
+        grayscale_pos_thresholded = grayscale_image_positive
+        grayscale_neg_thresholded = grayscale_image_negative
+
+        grayscale_pos_thresholded[grayscale_pos_thresholded < percentile_95_pos] = 0
+        grayscale_neg_thresholded[grayscale_neg_thresholded < percentile_95_neg] = 0
 
 
-    return render_template('predict.html', image_url=image_url, selected_image_url=selected_image_url, question=question, predicted_age=age_ans,predictions_gender=gender_ans,shap_values=shap_values,answer_true=answer
-                           ,img_url=url_for('uploaded_file', filename='output_' + filename))
-                           
+        input_image_basename = os.path.basename(img)  # Extracts 'input_image.png' from the path
+        input_image_name, _ = os.path.splitext(input_image_basename)  # Removes the extension, resulting in 'input_image'
+
+        # Use app.config['UPLOAD_FOLDER'] to construct the base output path
+        base_output_path = os.path.join(app.config['UPLOAD_FOLDER'], input_image_name)
+
+        # Define the full paths for the positive and negative overlay output images
+        output_path_pos = f'{base_output_path}_pos.png'
+        output_path_neg = f'{base_output_path}_neg.png'
+
+        # Proceed with detection and plotting
+        df_yolo_results = detect(img)  # Make sure 'detect' returns a DataFrame with YOLO detection results
+
+        # Assuming grayscale_pos_thresholded and grayscale_neg_thresholded are defined and ready to use
+        selected_bboxes_pos = plot_bboxes_on_image_pos(img, df_yolo_results, grayscale_pos_thresholded, output_path_pos)
+        selected_bboxes_neg = plot_bboxes_on_image_neg(img, df_yolo_results, grayscale_neg_thresholded, output_path_neg)
+    # Convert server paths to web-accessible URLs
+    output_url_pos = url_for('static', filename='uploads/' + os.path.basename(output_path_pos))
+    output_url_neg = url_for('static', filename='uploads/' + os.path.basename(output_path_neg))
+
+    return render_template('predict.html', image_url=image_url, selected_image_url=selected_image_url,
+                           question=question, predicted_age=age_ans, predictions_gender=gender_ans,
+                           shap_values=shap_values, answer_true=answer, output_url_pos=output_url_pos,
+                           output_url_neg=output_url_neg)
 
 
 

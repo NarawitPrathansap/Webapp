@@ -1,9 +1,13 @@
+from flask import Flask
 from keras.preprocessing.image import load_img, img_to_array
+import pandas as pd
+import marshal
 import numpy as np
 import shap
 import tensorflow as tf
-import sys
 import os
+
+app = Flask(__name__)
 
 def process_input(images_directory):
     background_data = []
@@ -20,51 +24,37 @@ def process_input(images_directory):
 
     return np.array(background_data)
 
-def create_explainers(background_data):
-    background_data_np = np.array(background_data)
-    model_7_14 = tf.keras.models.load_model('../Webapp/templates/36_Multi_1e-5_500_Unfreeze.h5')
-    model_15_23 = tf.keras.models.load_model('../Webapp/templates/25_Multi_1e-6_500_Unfreeze.h5')
 
-    # Use the correct layer names based on the error output
-    model7_14_age = tf.keras.Model(inputs=model_7_14.input, outputs=model_7_14.get_layer('Prediction_Age').output)
-    model7_14_gender = tf.keras.Model(inputs=model_7_14.input, outputs=model_7_14.get_layer('Prediction_Gender').output)
-    model15_23_age = tf.keras.Model(inputs=model_15_23.input, outputs=model_15_23.get_layer('Prediction_Age').output)
-    model15_23_gender = tf.keras.Model(inputs=model_15_23.input, outputs=model_15_23.get_layer('Prediction_Gender').output)
+# Define the base path for your images
+images_base_path = "../Webapp/images"
 
-    explainer7_14_age = shap.GradientExplainer(model7_14_age, background_data_np)
-    explainer7_14_gender = shap.GradientExplainer(model7_14_gender, background_data_np)
-    explainer15_23_age = shap.GradientExplainer(model15_23_age, background_data_np)
-    explainer15_23_gender = shap.GradientExplainer(model15_23_gender, background_data_np)
 
-    return explainer7_14_age, explainer7_14_gender, explainer15_23_age, explainer15_23_gender
-def compute_shap_values(model, background_data, test_images):
-    # Initialize the SHAP explainer with the model and background data
-    explainer = shap.GradientExplainer(model, background_data)
+# Create background data using the process_input function
+background_train = process_input(images_base_path)
 
-    # Compute SHAP values for the test images
-    shap_values = explainer.shap_values(test_images)
-    
-    return shap_values
-# Assume you have a function to load your model
-def load_model(model_path):
-    return tf.keras.models.load_model(model_path)
+# Serialize background data using marshal (optional)
+serialized_data = marshal.dumps(background_train)
 
-if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Usage: python bg_shap.py <background_images_directory> <model_path>")
-        sys.exit(1)
+# Convert background data to numpy array
+background_train_np = np.array(background_train)
 
-    background_images_path = sys.argv[1]
-    model_path = sys.argv[2]
+# Define models
+model_7_14 = tf.keras.models.load_model('../Webapp/templates/36_Multi_1e-5_500_Unfreeze.h5')
+model_15_23 = tf.keras.models.load_model('../Webapp/templates/25_Multi_1e-6_500_Unfreeze.h5')
 
-    # Load and preprocess background data
-    background_data = process_input(background_images_path)
+# Create separate models for each output you want to explain
+model7_14_age = tf.keras.Model(inputs=model_7_14.input, outputs=model_7_14.get_layer('Prediction_Age').output)
+model7_14_gender = tf.keras.Model(inputs=model_7_14.input, outputs=model_7_14.get_layer('Prediction_Gender').output)
+model15_23_age = tf.keras.Model(inputs=model_15_23.input, outputs=model_15_23.get_layer('Prediction_Age').output)
+model15_23_gender = tf.keras.Model(inputs=model_15_23.input, outputs=model_15_23.get_layer('Prediction_Gender').output)
 
-    # Load your model
-    model = load_model(model_path)
+# Create a GradientExplainer with the background data
+explainer7_14_age = shap.GradientExplainer(model7_14_age, background_train_np)
+explainer7_14_gender = shap.GradientExplainer(model7_14_gender, background_train_np)
+explainer15_23_age = shap.GradientExplainer(model15_23_age, background_train_np)
+explainer15_23_gender = shap.GradientExplainer(model15_23_gender, background_train_np)
 
-    # Optionally, select a subset of background_data as test_images or load separate test images
-    test_images = background_data  # For demonstration, using the same as background
+# Further processing or usage of shap_values can be added here
 
-    # Compute SHAP values
-    shap_values = compute_shap_values(model, background_data, test_images)
+if __name__ == '__main__':
+    app.run(debug=True)

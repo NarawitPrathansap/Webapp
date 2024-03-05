@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory
 from werkzeug.utils import secure_filename
-from PIL import Image
+from PIL import Image, ImageOps
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.preprocessing import image
@@ -9,6 +9,13 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.applications import EfficientNetB0
 import os
 import requests
+import io
+import shap
+from langdetect import detect
+from transformers import BertTokenizer, BertModel
+import pickle
+
+
 
 
 
@@ -24,11 +31,18 @@ get_custom_objects().update({
     'DropConnect':DropConnect
 })
 
-model = load_model('../Webapp/templates/26_Multi_1e-6_250_Unfreeze.h5')
+model_7_23 = load_model('../Webapp/templates/26_Multi_1e-6_250_Unfreeze.h5')
+model_7_14 = load_model('../Webapp/templates/36_Multi_1e-5_500_Unfreeze.h5')
+model_15_23 = load_model('../Webapp/templates/25_Multi_1e-6_500_Unfreeze.h5')
 
+yolo_model = tf.saved_model.load('../Webapp/templates/best.pb')
 
+random_forest_model = pickle.load(open('../Webapp/templates/random_forest_model_real1.pkl', 'rb'))
+tokenizer = BertTokenizer.from_pretrained('bert-base-multilingual-cased')
+bert_model = BertModel.from_pretrained('bert-base-multilingual-cased')
 
 app.config['UPLOAD_FOLDER'] = 'uploads/'
+
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 def allowed_file(filename):

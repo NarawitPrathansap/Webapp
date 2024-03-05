@@ -256,16 +256,17 @@ def predict():
     # Calculate SHAP values
     shap_values = explainer15_23_gender.shap_values(reshaped_user_uploaded_image)
     
-    grey = subprocess.run(['python', 'grayscale.py'], input=json.dumps(shap_values), capture_output=True, text=True)
 
-    # Check if we got output and parse it
+    grey = subprocess.run(['python', 'grayscale.py'], input=json.dumps(shap_values), capture_output=True, text=True, check=True)
+
+    # Parse the output JSON from grayscale.py
     if grey.stdout:
         output_data = json.loads(grey.stdout)
-        grayscale_image_path = output_data.get('grayscale_image_path', "")
-        # Process grayscale_neg_thresholded and grayscale_pos_thresholded if needed
+        grayscale_pos_thresholded = output_data['grayscale_pos_thresholded']
+        grayscale_neg_thresholded = output_data['grayscale_neg_thresholded']
+        # Now you can use grayscale_pos_thresholded and grayscale_neg_thresholded as needed
     else:
-        grayscale_image_path = ""
-        print("Error running grayscale.py or no grayscale image generated")
+        print("No output received from grayscale.py")
  
 
     # Call the YOLOv5 detection script as a subprocess

@@ -10,9 +10,6 @@ from tensorflow.keras.applications import EfficientNetB0
 import os
 import requests
 
-
-app = Flask(__name__)
-
 from efficientnet.layers import Swish, DropConnect
 from efficientnet.model import ConvKernalInitializer
 from tensorflow.keras.utils import get_custom_objects
@@ -26,6 +23,7 @@ get_custom_objects().update({
 model = load_model('../Webapp/templates/26_Multi_1e-6_250_Unfreeze.h5')
 
 
+app = Flask(__name__)
 
 
 
@@ -52,7 +50,7 @@ def preprocess_img(img_path):
 
 
 def predict_result(img_array):
-    predictions = model1.predict(img_array)
+    predictions = model.predict(img_array)
     prediction_age = predictions[0]
     prediction_gender = predictions[1]
 

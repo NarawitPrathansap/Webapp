@@ -32,7 +32,7 @@ get_custom_objects().update({
 })
 
 # Load the model
-model1 = tf.keras.models.load_model('templates/26_Multi_1e-6_250_Unfreeze.h5')
+model1 = tf.keras.models.load_model('/templates/26_Multi_1e-6_250_Unfreeze.h5')
 
 
 # Preparing and pre-processing the image

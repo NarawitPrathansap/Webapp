@@ -38,10 +38,11 @@ def create_explainers(background_data):
     model_7_14 = tf.keras.models.load_model('../Webapp/templates/36_Multi_1e-5_500_Unfreeze.h5')
     model_15_23 = tf.keras.models.load_model('../Webapp/templates/25_Multi_1e-6_500_Unfreeze.h5')
 
-    model7_14_age = tf.keras.Model(inputs=model_7_14.input, outputs=model_7_14.get_layer('prediction_layer').output)
-    model7_14_gender = tf.keras.Model(inputs=model_7_14.input, outputs=model_7_14.get_layer('prediction_layer2').output)
-    model15_23_age = tf.keras.Model(inputs=model_15_23.input, outputs=model_15_23.get_layer('prediction_layer').output)
-    model15_23_gender = tf.keras.Model(inputs=model_15_23.input, outputs=model_15_23.get_layer('prediction_layer2').output)
+    # Use the correct layer names based on the error output
+    model7_14_age = tf.keras.Model(inputs=model_7_14.input, outputs=model_7_14.get_layer('Prediction_Age').output)
+    model7_14_gender = tf.keras.Model(inputs=model_7_14.input, outputs=model_7_14.get_layer('Prediction_Gender').output)
+    model15_23_age = tf.keras.Model(inputs=model_15_23.input, outputs=model_15_23.get_layer('Prediction_Age').output)
+    model15_23_gender = tf.keras.Model(inputs=model_15_23.input, outputs=model_15_23.get_layer('Prediction_Gender').output)
 
     explainer7_14_age = shap.GradientExplainer(model7_14_age, background_data_np)
     explainer7_14_gender = shap.GradientExplainer(model7_14_gender, background_data_np)

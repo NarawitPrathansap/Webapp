@@ -14,7 +14,7 @@ import shap
 from langdetect import detect
 from transformers import BertTokenizer, BertModel
 import pickle
-
+import torch
 
 
 
@@ -34,8 +34,8 @@ get_custom_objects().update({
 model_7_23 = load_model('../Webapp/templates/26_Multi_1e-6_250_Unfreeze.h5')
 model_7_14 = load_model('../Webapp/templates/36_Multi_1e-5_500_Unfreeze.h5')
 model_15_23 = load_model('../Webapp/templates/25_Multi_1e-6_500_Unfreeze.h5')
-
-yolo_model = tf.saved_model.load('../Webapp/templates/best.pb')
+weights_path = '../Webapp/templates/best.pt'
+yolo_model = torch.hub.load('ultralytics/yolov5', 'custom', path=weights_path)
 
 random_forest_model = pickle.load(open('../Webapp/templates/random_forest_model_real1.pkl', 'rb'))
 tokenizer = BertTokenizer.from_pretrained('bert-base-multilingual-cased')

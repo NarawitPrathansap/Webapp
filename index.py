@@ -5,6 +5,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.applications.efficientnet import preprocess_input
+from keras.models import load_model
 from tensorflow.keras.applications import EfficientNetB0
 import os
 
@@ -34,7 +35,7 @@ get_custom_objects().update({
 })
 
 # Load the model
-model1 = tf.keras.models.load_model('../Webapp/templates/26_Multi_1e-6_250_Unfreeze.h5')
+model1 = load_model('../Webapp/templates/26_Multi_1e-6_250_Unfreeze.h5')
 
 
 # Preparing and pre-processing the image

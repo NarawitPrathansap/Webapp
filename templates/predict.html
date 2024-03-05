@@ -21,7 +21,7 @@
             overflow: hidden;
         }
         .image-right-container {
-            text-align: right; /* Keeps the image aligned to the right */
+            text-align: right;
             margin-top: 20px;
         }
         img {
@@ -32,18 +32,18 @@
         }
         .chat-bubble-container {
             display: flex;
-            justify-content: flex-end; /* Aligns the chat bubble to the right */
+            justify-content: flex-end;
             margin-top: 20px;
         }
         .chat-bubble {
             background-color: #e5e5ea;
             border-radius: 20px;
-            padding: 20px 30px; /* Increased padding for a larger bubble */
+            padding: 20px 30px;
             color: #000;
             max-width: 80%;
             text-align: left;
-            font-size: 18px; /* Increased font size */
-            margin-right: 10px; /* Optional: Adjusts the right margin for aesthetics */
+            font-size: 18px;
+            margin-right: 10px;
         }
 
         a {
@@ -57,7 +57,7 @@
         }
         h1 { 
             font-size: 50px;
-            font-style: Italic;
+            font-style: italic;
         }
         .image-left-container {
             text-align: left; 
@@ -65,18 +65,21 @@
         }
         .chat-bubble-container-left {
             display: flex;
-            justify-content: flex-start; /* Aligns the chat bubble to the right */
+            justify-content: flex-start;
             margin-top: 20px;
         }
         .chat-bubble-left {
             background-color: #e5e5ea;
             border-radius: 20px;
-            padding: 20px 30px; /* Increased padding for a larger bubble */
+            padding: 20px 30px;
             color: #000;
             max-width: 80%;
             text-align: right;
-            font-size: 18px; /* Increased font size */
-            margin-right: 10px; /* Optional: Adjusts the right margin for aesthetics */
+            font-size: 18px;
+            margin-right: 10px;
+        }
+        .shap-values-container {
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -105,6 +108,12 @@
                 <!-- Include Gender Prediction -->
                 <p><strong>Gender Prediction:</strong> {{ predictions_gender | safe }}</p>
             </div>
+        </div>
+
+        <!-- SHAP Values -->
+        <div class="shap-values-container">
+            <h3>SHAP Values:</h3>
+            <p>{{ shap_values | safe }}</p>
         </div>
         
         <a href="{{ url_for('index') }}">Try another prediction</a>

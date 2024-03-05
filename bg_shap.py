@@ -7,15 +7,14 @@ import tensorflow as tf
 import sys
 import os
 
-def process_input(dt_train):
+def process_input(images_directory):
     background_data = []
-    if 'Path_Name' not in dt_train.columns:
-        raise ValueError("The 'Path_Name' column does not exist in the DataFrame.")
+    image_paths = [os.path.join(images_directory, f) for f in os.listdir(images_directory) if os.path.isfile(os.path.join(images_directory, f))]
     
-    for i, image_path in enumerate(dt_train['Path_Name']):
-        print(f"Processing image {i+1}/{len(dt_train)}: {image_path}")
+    for i, image_path in enumerate(image_paths):
+        print(f"Processing image {i+1}/{len(image_paths)}: {image_path}")
         try:
-            image = load_img(image_path, target_size=(224, 224))  # Ensure path is accessible
+            image = load_img(image_path, target_size=(224, 224))
             preprocessed_image = img_to_array(image) / 255.0
             background_data.append(preprocessed_image)
         except Exception as e:
@@ -23,8 +22,6 @@ def process_input(dt_train):
 
     return np.array(background_data)
 
-def read_dataframe_from_csv(csv_file_path):
-    return pd.read_csv(csv_file_path)
 
 from efficientnet.layers import Swish, DropConnect
 from efficientnet.model import ConvKernalInitializer

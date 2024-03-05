@@ -282,7 +282,7 @@ def predict():
 
 
     return render_template('predict.html', image_url=image_url, selected_image_url=selected_image_url, question=question, predicted_age=age_ans,predictions_gender=gender_ans,shap_values=shap_values,answer_true=answer
-                           img_url=url_for('uploaded_file', filename='output_' + filename))
+                           ,img_url=url_for('uploaded_file', filename='output_' + filename))
                            
 
 

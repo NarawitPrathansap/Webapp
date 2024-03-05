@@ -8,6 +8,7 @@ from tensorflow.keras.applications.efficientnet import preprocess_input
 from keras.models import load_model
 from tensorflow.keras.applications import EfficientNetB0
 import os
+import requests
 
 
 app = Flask(__name__)
@@ -34,8 +35,23 @@ get_custom_objects().update({
     'DropConnect':DropConnect
 })
 
-# Load the model
-model1 = load_model('26_Multi_1e-6_250_Unfreeze.h5')
+# Correct URL for the raw model file (example, replace with actual raw URL)
+model_url = 'https://raw.githubusercontent.com/NarawitPrathansap/Webapp/main/templates/26_Multi_1e-6_250_Unfreeze.h5'
+
+# Download the model file
+response = requests.get(model_url)
+model_path = '26_Multi_1e-6_250_Unfreeze.h5'  # Specify a local path to save the model
+
+# Ensure the response status is successful (status code 200)
+if response.status_code == 200:
+    # Save the model file locally
+    with open(model_path, 'wb') as file:
+        file.write(response.content)
+
+    # Load the model from the local file
+    model = tf.keras.models.load_model(model_path)
+else:
+    print("Failed to download the model. Status code:", response.status_code)
 
 
 # Preparing and pre-processing the image

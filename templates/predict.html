@@ -87,7 +87,7 @@
     
     <div class="container">
         <div class="image-right-container">
-             <img src="{{ image_url }}" alt="User Image" style="width:300; height:300; max-width:50%; max-height:100%; display:inline-block;">
+             <img src="{{ image_url }}" alt="User Image">
         </div>
         
         <!-- Chat Bubble Container for Right Alignment -->
@@ -97,11 +97,13 @@
             </div>
         </div>
         <div class="image-left-container">
-            <img src="{{ selected_image_url }}" alt="User Image" style="width:300; height:300; max-width:50%; max-height:100%; display:inline-block;">
+            <img src="{{ selected_image_url }}" alt="User Image">
         </div>
         <div class="chat-bubble-container-left">
             <div class="chat-bubble-left">
-                <p><strong>Answer:</strong> {{ predicted_age }}</p>
+                <p><strong>Age Prediction:</strong> {{ predicted_age }}</p>
+                <!-- Include Gender Prediction -->
+                <p><strong>Gender Prediction:</strong> {{ predictions_gender | safe }}</p>
             </div>
         </div>
         

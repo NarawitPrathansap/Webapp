@@ -37,18 +37,34 @@ def create_explainers(background_data):
     explainer15_23_gender = shap.GradientExplainer(model15_23_gender, background_data_np)
 
     return explainer7_14_age, explainer7_14_gender, explainer15_23_age, explainer15_23_gender
+def compute_shap_values(model, background_data, test_images):
+    # Initialize the SHAP explainer with the model and background data
+    explainer = shap.GradientExplainer(model, background_data)
+
+    # Compute SHAP values for the test images
+    shap_values = explainer.shap_values(test_images)
+    
+    return shap_values
+# Assume you have a function to load your model
+def load_model(model_path):
+    return tf.keras.models.load_model(model_path)
 
 if __name__ == "__main__":
-    # Ensure correct usage
-    if len(sys.argv) != 2:
-        print("Usage: python subprocess_shap.py <images_directory>")
+    if len(sys.argv) != 3:
+        print("Usage: python bg_shap.py <background_images_directory> <model_path>")
         sys.exit(1)
-        
-    # Define the base path for your images
-    images_base_path = sys.argv[1]
 
-    # Create background data using the process_input function
-    background_train = process_input(images_base_path)
+    background_images_path = sys.argv[1]
+    model_path = sys.argv[2]
 
-    # Create explainers
-    explainer7_14_age, explainer7_14_gender, explainer15_23_age, explainer15_23_gender = create_explainers(background_train)
+    # Load and preprocess background data
+    background_data = process_input(background_images_path)
+
+    # Load your model
+    model = load_model(model_path)
+
+    # Optionally, select a subset of background_data as test_images or load separate test images
+    test_images = background_data  # For demonstration, using the same as background
+
+    # Compute SHAP values
+    shap_values = compute_shap_values(model, background_data, test_images)

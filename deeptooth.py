@@ -167,13 +167,29 @@ def predict():
         selected_image_url = url_for('uploaded_file', filename=os.path.basename(img)) # For the selected image after processing
 
         predictions_highCon = predict_image(img, model, height, width) # ภาพที่เลือก
-
+        
         # Access the regression result (output 0)
-        predictions_highCon_Age = predictions_highCon[0]
+        predictions_highCon_Age = predictions_highCon[0][0][0] # [0] บอกว่าดึงจาก layer ไหน [0][0] ถอด[[]]ออก
+
+        age_ans = np.around(predictions_highCon_Age) # array
+        age_ans # อายุที่จะเอาไปตอบบทแชท
+        
 
         # Access the classification result (output 1)
-        predictions_highCon_Gender = predictions_highCon[1] # Use a threshold to determine the class
-    return render_template('predict.html', image_url=image_url, selected_image_url=selected_image_url, question=question, predicted_age=predictions_highCon_Age,predictions_gender=predictions_highCon_Gender)
+        predictions_highCon_Gender = predictions_highCon[1][0][0] # Use a threshold to determine the class
+        
+        if predictions_highCon_Gender  >= 0.5: #male
+           gender_ans = "Male"
+        else:
+           gender_ans = "Female"
+
+
+
+
+
+    return render_template('predict.html', image_url=image_url, selected_image_url=selected_image_url, question=question, predicted_age=age_ans,predictions_gender=gender_ans)
+
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0',debug=True,port=5001)#host='0.0.0.0',port=5001

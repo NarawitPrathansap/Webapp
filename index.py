@@ -16,7 +16,7 @@ from transformers import BertTokenizer, BertModel
 import pickle
 import torch
 from joblib import load
-
+import subprocess
 
 
 app = Flask(__name__)
@@ -143,12 +143,12 @@ def predict():
                 selected_image_path = left_image_path
                 selected_age_prediction = prediction_age_left
                 selected_gender_prob = adjusted_prob_left
-                selected_image = "left"
+                selected_image = "select left" + filename
             else:
                 selected_image_path = right_image_path
                 selected_age_prediction = prediction_age_right
                 selected_gender_prob = adjusted_prob_right
-                selected_image = "right"
+                selected_image = "select right" + filename
             print(f"Selected {selected_image} image with adjusted gender probability: {selected_gender_prob} and age prediction: {selected_age_prediction}")    
             # Determine which model to use based on age prediction
             if selected_age_prediction <= 14:
@@ -167,19 +167,16 @@ def predict():
                 # Convert predicted_class_index to a meaningful label if applicable
                 predicted_label = "Label1" if predicted_class_index == 0 else "Label2"
                 print(f"Final prediction (classification): {predicted_label}")
-
-            # If your final model outputs a continuous value (like age), directly print it
-            # This could be the case if you have a regression model
-            # Example:
-            else:
                 predicted_age = final_predictions[0][0]  # Assuming the prediction is the first element
                 print(f"Final prediction (regression): {predicted_age}")
+            selected_image_url = url_for('uploaded_file', filename=selected_image)
 
+            # Render your template with the selected image URL
             return render_template('predict.html', 
-                                   image_url=url_for('uploaded_file', filename=filename),
-                                   question=question
-            )
-
+                                image_url=image_url,
+                                selected_image_url=selected_image_url,  # Add this
+                                question=question,
+                                prediction=predicted_age)
 
 
 if __name__ == "__main__":

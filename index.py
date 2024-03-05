@@ -5,25 +5,13 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.applications.efficientnet import preprocess_input
-from keras.models import load_model
+from tensorflow.keras.models import load_model
 from tensorflow.keras.applications import EfficientNetB0
 import os
 import requests
 
 
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = 'uploads/'
-
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-@app.route('/uploads/<filename>')
-def uploaded_file(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
-import sys
-sys.path.append('../Webapp/templates/26_Multi_1e-6_250_Unfreeze.h5')
 
 from efficientnet.layers import Swish, DropConnect
 from efficientnet.model import ConvKernalInitializer
@@ -35,23 +23,23 @@ get_custom_objects().update({
     'DropConnect':DropConnect
 })
 
-# Correct URL for the raw model file (example, replace with actual raw URL)
-model_url = 'https://raw.githubusercontent.com/NarawitPrathansap/Webapp/main/templates/26_Multi_1e-6_250_Unfreeze.h5'
+model = load_model('../Webapp/templates/26_Multi_1e-6_250_Unfreeze.h5')
 
-# Download the model file
-response = requests.get(model_url)
-model_path = '26_Multi_1e-6_250_Unfreeze.h5'  # Specify a local path to save the model
 
-# Ensure the response status is successful (status code 200)
-if response.status_code == 200:
-    # Save the model file locally
-    with open(model_path, 'wb') as file:
-        file.write(response.content)
 
-    # Load the model from the local file
-    model = tf.keras.models.load_model(model_path)
-else:
-    print("Failed to download the model. Status code:", response.status_code)
+
+
+
+app.config['UPLOAD_FOLDER'] = 'uploads/'
+
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 
 # Preparing and pre-processing the image

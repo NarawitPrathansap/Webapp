@@ -5,7 +5,11 @@ from flask import Flask, render_template, request, redirect, url_for, send_from_
 
 app = Flask(__name__)
 
-random_forest_model = pickle.load(open('../Webapp/templates/random_forest_model_real1.pkl', 'rb'))
+try:
+    with open('../Webapp/templates/random_forest_model_real1.pkl', 'rb') as file:
+        random_forest_model = pickle.load(file)
+except Exception as e:
+    print(f"Error loading the pickle file: {e}")
 
 @app.route('/')
 def index():

@@ -72,8 +72,9 @@ def predict_result(img_array):
 
     # Assuming your model returns age as a continuous value and gender as a probability that needs argmax
     # Adjust these lines according to your model's actual output format
-    age = prediction_age[0] # Assuming the first prediction is age as a continuous value
-    gender = np.argmax(prediction_gender[0], axis=-1)  # Assuming the second prediction is gender as a binary classification
+    age = np.around(prediction_age[0][0])
+    
+    gender = np.argmax(prediction_gender[0][0], axis=-1)  # Assuming the second prediction is gender as a binary classification
 
     return age, gender
 

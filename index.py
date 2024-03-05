@@ -35,7 +35,7 @@ get_custom_objects().update({
 })
 
 # Load the model
-model1 = load_model('../Webapp/templates/26_Multi_1e-6_250_Unfreeze.h5')
+model1 = load_model('26_Multi_1e-6_250_Unfreeze.h5')
 
 
 # Preparing and pre-processing the image

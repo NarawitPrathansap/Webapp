@@ -513,15 +513,11 @@ def predict():
         grayscale_neg_thresholded[grayscale_neg_thresholded < percentile_95_neg] = 0
 
 
-        input_image_basename = os.path.basename(img)  # Extracts 'input_image.png' from the path
-        input_image_name, _ = os.path.splitext(input_image_basename)  # Removes the extension, resulting in 'input_image'
 
-        # Use app.config['UPLOAD_FOLDER'] to construct the base output path
-        base_output_path = os.path.join(app.config['UPLOAD_FOLDER'], input_image_name)
 
-        # Define the full paths for the positive and negative overlay output images
-        output_path_pos = f'{base_output_path}_pos.png'
-        output_path_neg = f'{base_output_path}_neg.png'
+
+        output_path_pos = os.path.join(app.config['UPLOAD_FOLDER'], 'output_pos.png')
+        output_path_neg = os.path.join(app.config['UPLOAD_FOLDER'], 'output_neg.png')
 
         # Proceed with detection and plotting
         df_yolo_results = detect(img)  # Make sure 'detect' returns a DataFrame with YOLO detection results
@@ -530,8 +526,8 @@ def predict():
         selected_bboxes_pos = plot_bboxes_on_image_pos(img, df_yolo_results, grayscale_pos_thresholded, output_path_pos)
         selected_bboxes_neg = plot_bboxes_on_image_neg(img, df_yolo_results, grayscale_neg_thresholded, output_path_neg)
     # Convert server paths to web-accessible URLs
-    output_url_pos = url_for('static', filename='uploads/' + os.path.basename(output_path_pos))
-    output_url_neg = url_for('static', filename='uploads/' + os.path.basename(output_path_neg))
+        output_url_pos = url_for('uploaded_file', filename='output_pos.png')
+        output_url_neg = url_for('uploaded_file', filename='output_neg.png')
 
     return render_template('predict.html', image_url=image_url, selected_image_url=selected_image_url,
                            question=question, predicted_age=age_ans, predictions_gender=gender_ans,

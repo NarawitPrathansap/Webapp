@@ -92,7 +92,7 @@ def predict():
             right_image_path = os.path.join(app.config['UPLOAD_FOLDER'], right_image_filename)
 
             # Call the cut_image.py script as a subprocess
-            subprocess.run(['python', 'cut_image.py', image_path, left_image_path, right_image_path])
+            subprocess.run(['python', 'index.py', image_path, left_image_path, right_image_path])
 
 
 

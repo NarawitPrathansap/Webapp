@@ -202,13 +202,13 @@ def predict():
         if prediction_class == 4:
             answer = "Sorry, no answer available for this question."
         
-        # Calculate SHAP values using subprocess
-        shap_result = subprocess.run(['python', 'bg_shap.py', img, model], capture_output=True, text=True)
-        shap_values = shap_result.stdout
+            # Calculate SHAP values using subprocess
+            shap_result = subprocess.run(['python', 'bg_shap.py', img], capture_output=True, text=True)
+            shap_values = shap_result.stdout
 
-        # Process SHAP values as needed
-        # Example: Convert SHAP values to JSON and pass them to the template
-        shap_json = json.loads(shap_values)
+            # Process SHAP values as needed
+            # Example: Convert SHAP values to JSON and pass them to the template
+            shap_json = json.loads(shap_values)
 
 
 

@@ -171,8 +171,7 @@ def predict():
         # Access the regression result (output 0)
         predictions_highCon_Age = predictions_highCon[0][0][0] # [0] บอกว่าดึงจาก layer ไหน [0][0] ถอด[[]]ออก
 
-        age_ans = np.around(predictions_highCon_Age) # array
-        age_ans = age_ans.to_numpy()# อายุที่จะเอาไปตอบบทแชท
+        age_ans = int(np.around(predictions_highCon_Age)) # array
         
 
         # Access the classification result (output 1)

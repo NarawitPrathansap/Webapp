@@ -34,7 +34,7 @@ get_custom_objects().update({
 model_7_23 = load_model('../Webapp/templates/26_Multi_1e-6_250_Unfreeze.h5')
 model_7_14 = load_model('../Webapp/templates/36_Multi_1e-5_500_Unfreeze.h5')
 model_15_23 = load_model('../Webapp/templates/25_Multi_1e-6_500_Unfreeze.h5')
-weights_path = '../Webapp/templates/best.pt'
+#weights_path = '../Webapp/templates/best.pt'
 #yolo_model = torch.hub.load('ultralytics/yolov5', 'custom', path=weights_path)
 
 
@@ -178,7 +178,14 @@ def predict():
                                 selected_image_url=selected_image_url,  # Add this
                                 question=question,
                                 prediction=predicted_age)
-
+def run_yolo(image_path):
+    try:
+        # Assuming yolo.py takes an image path as argument and returns JSON or a string
+        output = subprocess.run(['python', 'yolo.py', image_path], check=True, stdout=subprocess.PIPE, text=True)
+        return output.stdout
+    except subprocess.CalledProcessError as e:
+        print(f"Error running yolo.py: {e}")
+        return "Error running detection."
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0',debug=True,port=5001)#host='0.0.0.0',port=5001

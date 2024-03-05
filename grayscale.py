@@ -3,6 +3,10 @@ import pandas as pd
 import numpy as np
 import sys
 import shap
+from keras.preprocessing.image import load_img, img_to_array
+import request
+
+
 
 #please change this!
 def process_input(dt_test):
@@ -96,9 +100,6 @@ grayscale_neg_thresholded = grayscale_image_negative
 grayscale_pos_thresholded[grayscale_pos_thresholded < percentile_95_pos] = 0
 grayscale_neg_thresholded[grayscale_neg_thresholded < percentile_95_neg] = 0
 
-
-if __name__ == '__main__':
-    app.run(debug=True)
 
 
 

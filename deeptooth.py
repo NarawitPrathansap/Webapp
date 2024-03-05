@@ -172,7 +172,7 @@ def predict():
         predictions_highCon_Age = predictions_highCon[0][0][0] # [0] บอกว่าดึงจาก layer ไหน [0][0] ถอด[[]]ออก
 
         age_ans = np.around(predictions_highCon_Age) # array
-        age_ans # อายุที่จะเอาไปตอบบทแชท
+        age_ans = age_ans.to_numpy()# อายุที่จะเอาไปตอบบทแชท
         
 
         # Access the classification result (output 1)

@@ -10,21 +10,23 @@ app = Flask(__name__)
 
 def process_input(dt_train):
     background_data = []
-
     if 'Path_Name' not in dt_train.columns:
         raise ValueError("The 'Path_Name' column does not exist in the DataFrame.")
+    
+    for i, image_path in enumerate(dt_train['Path_Name']):
+        print(f"Processing image {i+1}/{len(dt_train)}: {image_path}")
+        try:
+            image = load_img(image_path, target_size=(224, 224))  # Ensure path is accessible
+            preprocessed_image = img_to_array(image) / 255.0
+            background_data.append(preprocessed_image)
+        except Exception as e:
+            print(f"Error loading image {image_path}: {e}")
 
-    for i in range(len(dt_train)):
-        print(f"Processing image {i+1}/{len(dt_train)}")
-        image_path = dt_train['Path_Name'].iloc[i]
-        image = load_img(image_path, target_size=(224, 224))
-        preprocessed_image = img_to_array(image) / 255.0
-        background_data.append(preprocessed_image)
-
-    return background_data
+    return np.array(background_data)
 
 def read_dataframe_from_csv(csv_file_path):
     return pd.read_csv(csv_file_path)
+
 
 # Define the path to your CSV file containing the paths to images
 csv_file_path = "../Webapp/templates/Bg_train.csv"

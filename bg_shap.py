@@ -53,14 +53,11 @@ def create_explainers(background_data):
 
     return explainer7_14_age, explainer7_14_gender, explainer15_23_age, explainer15_23_gender
 
-# Define the path to your CSV file containing the paths to images
-csv_file_path = "../Webapp/templates/Bg_train.csv"
-
-# Read DataFrame from CSV file
-sdf_train = read_dataframe_from_csv(csv_file_path)
+# Define the base path for your images
+images_base_path = "../Webapp/images"
 
 # Create background data using the process_input function
-background_train = process_input(sdf_train)
+background_train = process_input(images_base_path)
 
 # Serialize background data using marshal (optional)
 serialized_data = marshal.dumps(background_train)

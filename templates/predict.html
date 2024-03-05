@@ -68,9 +68,9 @@
         <div class="image-container">
             <img src="{{ image_url }}" alt="Uploaded Image" title="Uploaded Image">
             <img src="{{ selected_image_url }}" alt="Selected Image" title="Selected Image">
-            <!-- Displaying output images with overlays -->
-            <img src="{{ url_for('uploaded_file', filename=output_path_pos.split('/')[-1]) }}" alt="Positive Overlay Image" title="Positive Overlay">
-            <img src="{{ url_for('uploaded_file', filename=output_path_neg.split('/')[-1]) }}" alt="Negative Overlay Image" title="Negative Overlay">
+            <!-- Corrected lines for displaying overlay images -->
+            <img src="{{ output_url_pos }}" alt="Positive Overlay Image" title="Positive Overlay">
+            <img src="{{ output_url_neg }}" alt="Negative Overlay Image" title="Negative Overlay">
         </div>
         
         <div class="chat-bubble-container">
@@ -82,7 +82,6 @@
             </div>
         </div>
         
-        <!-- Assuming shap_values is passed as a string or preformatted HTML -->
         <div class="shap-values-container">
             <p><strong>SHAP Values:</strong> {{ shap_values | safe }}</p>
         </div>

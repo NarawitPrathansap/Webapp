@@ -169,6 +169,7 @@ def predict():
                 print(f"Final prediction (classification): {predicted_label}")
                 predicted_age = final_predictions[0][0]  # Assuming the prediction is the first element
                 print(f"Final prediction (regression): {predicted_age}")
+            selected_image_path = os.path.join(app.config['UPLOAD_FOLDER'], selected_image)
             selected_image_url = url_for('uploaded_file', filename=selected_image)
 
             # Render your template with the selected image URL

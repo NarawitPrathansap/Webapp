@@ -66,7 +66,7 @@ def preprocess_img(img_path):
 
 
 def predict_result(img_array):
-    predictions = model.predict(img_array)
+    predictions = model_7_23.predict(img_array)
     prediction_age = predictions[0]
     prediction_gender = predictions[1]
 
@@ -126,18 +126,59 @@ def predict():
 
             # Print the received question for debugging
             print("Received question:", question)
-            prediction = "Dummy prediction result"  # Replace with your model's prediction logic
             # Preprocess both images
             left_image_array = preprocess_img(left_image_path)
             right_image_array = preprocess_img(right_image_path)
-            prediction_age1, prediction_gender1 = predict_result(left_image_array)
-            prediction_age2, prediction_gender2 = predict_result(right_image_array)
-            # Render the result template with the image URLs
+            prediction_age_left, gender_prob_left  = predict_result(left_image_array)
+            prediction_age_right, gender_prob_right  = predict_result(right_image_array)
+            
+            # Adjust probabilities: If the model predicts female (prob < 0.5), adjust by doing 1 - prob
+            # This way, for female predictions, a higher adjusted value (closer to 1) indicates higher confidence in the female prediction
+            adjusted_prob_left = gender_prob_left if gender_prob_left >= 0.5 else 1 - gender_prob_left
+            adjusted_prob_right = gender_prob_right if gender_prob_right >= 0.5 else 1 - gender_prob_right
+
+            # Select the image with the highest adjusted probability
+            if adjusted_prob_left >= adjusted_prob_right:
+                selected_image_path = left_image_path
+                selected_age_prediction = prediction_age_left
+                selected_gender_prob = adjusted_prob_left
+                selected_image = "left"
+            else:
+                selected_image_path = right_image_path
+                selected_age_prediction = prediction_age_right
+                selected_gender_prob = adjusted_prob_right
+                selected_image = "right"
+            print(f"Selected {selected_image} image with adjusted gender probability: {selected_gender_prob} and age prediction: {selected_age_prediction}")    
+            # Determine which model to use based on age prediction
+            if selected_age_prediction <= 14:
+                final_model = model_7_14
+            else:
+                final_model = model_15_23
+
+            selected_image_array = preprocess_img(selected_image_path)
+
+            final_predictions = final_model.predict(selected_image_array)
+
+            # If your final model outputs classification probabilities, you might do something like this:
+            if final_model == model_7_14 or final_model == model_15_23:
+                # Assuming a binary classification outcome as an example
+                predicted_class_index = np.argmax(final_predictions[0], axis=-1)
+                # Convert predicted_class_index to a meaningful label if applicable
+                predicted_label = "Label1" if predicted_class_index == 0 else "Label2"
+                print(f"Final prediction (classification): {predicted_label}")
+
+            # If your final model outputs a continuous value (like age), directly print it
+            # This could be the case if you have a regression model
+            # Example:
+            else:
+                predicted_age = final_predictions[0][0]  # Assuming the prediction is the first element
+                print(f"Final prediction (regression): {predicted_age}")
+                
             return render_template('result.html', 
                                    image_url=url_for('uploaded_file', filename=filename),
                                    #right_image_url=url_for('uploaded_file', filename=right_filename),
                                    question=question,
-                                   prediction=prediction 
+                                   #prediction=prediction,
                                    #prediction_age1=prediction_age1, 
                                    #prediction_gender1=prediction_gender1,
                                    #prediction_age2=prediction_age2, 

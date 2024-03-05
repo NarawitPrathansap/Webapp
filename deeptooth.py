@@ -13,6 +13,7 @@ import io
 import pickle
 import torch
 import subprocess
+import json
 
 app = Flask(__name__)
 
@@ -52,6 +53,8 @@ def calculate_confident(value):
     else:
         confident = 1 - value #female
     return confident
+
+
 
 app.config['UPLOAD_FOLDER'] = 'uploads/'
 
@@ -182,11 +185,34 @@ def predict():
         else:
            gender_ans = "Female"
 
+        # Run the classification model using subprocess
+        classification_result = subprocess.run(['python', 'clf.py', question], capture_output=True, text=True)
+        classification_output = classification_result.stdout
+        classification_response = json.loads(classification_output)
+        prediction_class = classification_response.get('prediction')
+        
+        if prediction_class == 0:
+            answer = gender_ans
+        if prediction_class == 1:
+            answer = age_ans
+        if prediction_class == 2:
+            answer = gender_ans +"Where"
+        if prediction_class == 3:
+            answer = age_ans + "Where"
+        if prediction_class == 4:
+            answer = "Sorry, no answer available for this question."
+        
+        # Calculate SHAP values using subprocess
+        shap_result = subprocess.run(['python', 'bg_shap.py', img, model], capture_output=True, text=True)
+        shap_values = shap_result.stdout
+
+        # Process SHAP values as needed
+        # Example: Convert SHAP values to JSON and pass them to the template
+        shap_json = json.loads(shap_values)
 
 
 
-
-    return render_template('predict.html', image_url=image_url, selected_image_url=selected_image_url, question=question, predicted_age=age_ans,predictions_gender=gender_ans)
+    return render_template('predict.html', image_url=image_url, selected_image_url=selected_image_url, question=question, predicted_age=age_ans,predictions_gender=gender_ans,shap_values=shap_json,answer_true=answer)
 
 
 

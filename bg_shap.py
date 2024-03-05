@@ -1,13 +1,11 @@
-from flask import Flask
 from keras.preprocessing.image import load_img, img_to_array
 import pandas as pd
 import marshal
 import numpy as np
 import shap
 import tensorflow as tf
-import sys  # Import sys module
-
-app = Flask(__name__)
+import sys
+import os
 
 def process_input(dt_train):
     background_data = []
@@ -27,6 +25,16 @@ def process_input(dt_train):
 
 def read_dataframe_from_csv(csv_file_path):
     return pd.read_csv(csv_file_path)
+
+from efficientnet.layers import Swish, DropConnect
+from efficientnet.model import ConvKernalInitializer
+from tensorflow.keras.utils import get_custom_objects
+
+get_custom_objects().update({
+    'ConvKernalInitializer': ConvKernalInitializer,
+    'Swish': Swish,
+    'DropConnect':DropConnect
+})
 
 def create_explainers(background_data):
     background_data_np = np.array(background_data)
@@ -59,6 +67,3 @@ serialized_data = marshal.dumps(background_train)
 
 # Create explainers
 explainer7_14_age, explainer7_14_gender, explainer15_23_age, explainer15_23_gender = create_explainers(background_train)
-
-if __name__ == '__main__':
-    app.run(debug=True)

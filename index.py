@@ -35,7 +35,7 @@ model_7_23 = load_model('../Webapp/templates/26_Multi_1e-6_250_Unfreeze.h5')
 model_7_14 = load_model('../Webapp/templates/36_Multi_1e-5_500_Unfreeze.h5')
 model_15_23 = load_model('../Webapp/templates/25_Multi_1e-6_500_Unfreeze.h5')
 weights_path = '../Webapp/templates/best.pt'
-yolo_model = torch.hub.load('ultralytics/yolov5', 'custom', path=weights_path)
+#yolo_model = torch.hub.load('ultralytics/yolov5', 'custom', path=weights_path)
 
 
 random_forest_model = load('../Webapp/templates/random_forest.joblib')
@@ -173,7 +173,7 @@ def predict():
             else:
                 predicted_age = final_predictions[0][0]  # Assuming the prediction is the first element
                 print(f"Final prediction (regression): {predicted_age}")
-                
+
             return render_template('result.html', 
                                    image_url=url_for('uploaded_file', filename=filename),
                                    #right_image_url=url_for('uploaded_file', filename=right_filename),

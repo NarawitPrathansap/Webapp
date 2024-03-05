@@ -5,6 +5,7 @@ import marshal
 import numpy as np
 import shap
 import tensorflow as tf
+import sys  # Import sys module
 
 app = Flask(__name__)
 
@@ -27,6 +28,22 @@ def process_input(dt_train):
 def read_dataframe_from_csv(csv_file_path):
     return pd.read_csv(csv_file_path)
 
+def create_explainers(background_data):
+    background_data_np = np.array(background_data)
+    model_7_14 = tf.keras.models.load_model('../Webapp/templates/36_Multi_1e-5_500_Unfreeze.h5')
+    model_15_23 = tf.keras.models.load_model('../Webapp/templates/25_Multi_1e-6_500_Unfreeze.h5')
+
+    model7_14_age = tf.keras.Model(inputs=model_7_14.input, outputs=model_7_14.get_layer('prediction_layer').output)
+    model7_14_gender = tf.keras.Model(inputs=model_7_14.input, outputs=model_7_14.get_layer('prediction_layer2').output)
+    model15_23_age = tf.keras.Model(inputs=model_15_23.input, outputs=model_15_23.get_layer('prediction_layer').output)
+    model15_23_gender = tf.keras.Model(inputs=model_15_23.input, outputs=model_15_23.get_layer('prediction_layer2').output)
+
+    explainer7_14_age = shap.GradientExplainer(model7_14_age, background_data_np)
+    explainer7_14_gender = shap.GradientExplainer(model7_14_gender, background_data_np)
+    explainer15_23_age = shap.GradientExplainer(model15_23_age, background_data_np)
+    explainer15_23_gender = shap.GradientExplainer(model15_23_gender, background_data_np)
+
+    return explainer7_14_age, explainer7_14_gender, explainer15_23_age, explainer15_23_gender
 
 # Define the path to your CSV file containing the paths to images
 csv_file_path = "../Webapp/templates/Bg_train.csv"
@@ -40,26 +57,8 @@ background_train = process_input(sdf_train)
 # Serialize background data using marshal (optional)
 serialized_data = marshal.dumps(background_train)
 
-# Convert background data to numpy array
-background_train_np = np.array(background_train)
-
-# Define models
-model_7_14 = tf.keras.models.load_model('../Webapp/templates/36_Multi_1e-5_500_Unfreeze.h5')
-model_15_23 = tf.keras.models.load_model('../Webapp/templates/25_Multi_1e-6_500_Unfreeze.h5')
-
-# Create separate models for each output you want to explain
-model7_14_age = tf.keras.Model(inputs=model_7_14.input, outputs=model_7_14.get_layer('prediction_layer').output)
-model7_14_gender = tf.keras.Model(inputs=model_7_14.input, outputs=model_7_14.get_layer('prediction_layer2').output)
-model15_23_age = tf.keras.Model(inputs=model_15_23.input, outputs=model_15_23.get_layer('prediction_layer').output)
-model15_23_gender = tf.keras.Model(inputs=model_15_23.input, outputs=model_15_23.get_layer('prediction_layer2').output)
-
-# Create a GradientExplainer with the background data
-explainer7_14_age = shap.GradientExplainer(model7_14_age, background_train_np)
-explainer7_14_gender = shap.GradientExplainer(model7_14_gender, background_train_np)
-explainer15_23_age = shap.GradientExplainer(model15_23_age, background_train_np)
-explainer15_23_gender = shap.GradientExplainer(model15_23_gender, background_train_np)
-
-# Further processing or usage of shap_values can be added here
+# Create explainers
+explainer7_14_age, explainer7_14_gender, explainer15_23_age, explainer15_23_gender = create_explainers(background_train)
 
 if __name__ == '__main__':
     app.run(debug=True)

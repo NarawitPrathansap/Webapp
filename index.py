@@ -20,6 +20,8 @@ def allowed_file(filename):
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+import sys
+sys.path.append('../Webapp/templates/26_Multi_1e-6_250_Unfreeze.h5')
 
 from efficientnet.layers import Swish, DropConnect
 from efficientnet.model import ConvKernalInitializer

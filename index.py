@@ -175,15 +175,9 @@ def predict():
                 predicted_age = final_predictions[0][0]  # Assuming the prediction is the first element
                 print(f"Final prediction (regression): {predicted_age}")
 
-            return render_template('result.html', 
+            return render_template('predict.html', 
                                    image_url=url_for('uploaded_file', filename=filename),
-                                   #right_image_url=url_for('uploaded_file', filename=right_filename),
-                                   question=question,
-                                   #prediction=prediction,
-                                   #prediction_age1=prediction_age1, 
-                                   #prediction_gender1=prediction_gender1,
-                                   #prediction_age2=prediction_age2, 
-                                   #prediction_gender2=prediction_gender2)
+                                   question=question
             )
 
 

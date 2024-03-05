@@ -38,10 +38,7 @@ weights_path = '../Webapp/templates/best.pt'
 yolo_model = torch.hub.load('ultralytics/yolov5', 'custom', path=weights_path)
 
 
-try:
-    random_forest_model = load('../Webapp/templates/random_forest_model_real1.pkl')
-except Exception as e:
-    print(f"Error loading the model: {e}")
+random_forest_model = load('../Webapp/templates/random_forest.joblib')
 
 tokenizer = BertTokenizer.from_pretrained('bert-base-multilingual-cased')
 bert_model = BertModel.from_pretrained('bert-base-multilingual-cased')

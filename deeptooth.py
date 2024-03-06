@@ -375,6 +375,7 @@ def get_auto_lang_answer(prediction_class, gender=None, age=None, selected_bboxe
 
 @app.route('/predict', methods=['POST'])
 def predict():
+    img_paths = []  # Initialize img_paths at the beginning to ensure it's always defined
     if request.method == 'POST':
         if 'image' not in request.files:
             print('No file part')

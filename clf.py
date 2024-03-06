@@ -30,7 +30,7 @@ def classify_question(text, tokenizer, model, random_forest_model):
     last_hidden_states = train_output.last_hidden_state
     cls_embeddings = last_hidden_states[:, 0, :]
     predictions = random_forest_model.predict(cls_embeddings.detach().numpy())
-    return predictions[0]
+    return predictions
 
 def fetch_answer(category, lang):
     # Placeholder for dynamic content based on prediction, such as 'gender' or 'age'

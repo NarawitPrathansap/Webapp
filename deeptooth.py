@@ -346,11 +346,23 @@ def get_auto_lang_answer(prediction_class, gender=None, age=None, selected_bboxe
 
     # Combining tooth parts from both positive and negative bboxes if they exist
     tooth_parts = []
+
+    # Check if selected_bboxes_pos is a DataFrame or a list of dictionaries
     if selected_bboxes_pos is not None:
-        tooth_parts.extend(selected_bboxes_pos['name'].tolist())
+        if isinstance(selected_bboxes_pos, pd.DataFrame):
+            tooth_parts.extend(selected_bboxes_pos['name'].tolist())
+        elif isinstance(selected_bboxes_pos, list) and all(isinstance(item, dict) for item in selected_bboxes_pos):
+            tooth_parts.extend([item['name'] for item in selected_bboxes_pos])
+
+    # Repeat the check for selected_bboxes_neg
     if selected_bboxes_neg is not None:
-        tooth_parts.extend(selected_bboxes_neg['name'].tolist())
-    tooth_parts_str = ', '.join(tooth_parts)    
+        if isinstance(selected_bboxes_neg, pd.DataFrame):
+            tooth_parts.extend(selected_bboxes_neg['name'].tolist())
+        elif isinstance(selected_bboxes_neg, list) and all(isinstance(item, dict) for item in selected_bboxes_neg):
+            tooth_parts.extend([item['name'] for item in selected_bboxes_neg])
+
+    tooth_parts_str = ', '.join(tooth_parts)
+   
 
     # Define answers database
     answers_db = {

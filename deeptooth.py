@@ -17,6 +17,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from langdetect import detect
+import sys
+import json
+from joblib import load
+from transformers import BertTokenizer, BertModel
 
 app = Flask(__name__)
 
@@ -34,6 +38,10 @@ model_7_23 = load_model('../Webapp/templates/26_Multi_1e-6_250_Unfreeze.h5')
 model_7_14 = load_model('../Webapp/templates/36_Multi_1e-5_500_Unfreeze.h5')
 model_15_23 = load_model('../Webapp/templates/25_Multi_1e-6_500_Unfreeze.h5')
 
+# Load your models outside of the request to save loading time
+random_forest_model = load('../Webapp/templates/random_forest.joblib')  # Adjust path as needed
+tokenizer = BertTokenizer.from_pretrained('bert-base-multilingual-cased')
+bert_model = BertModel.from_pretrained('bert-base-multilingual-cased')
 
 
 
@@ -388,6 +396,14 @@ def get_auto_lang_answer(prediction_class, gender=None, age=None, selected_bboxe
     
     return answer
 
+def classify_question(text, tokenizer, bert_model, random_forest_model):
+    inputs = tokenizer(text, return_tensors="pt", max_length=512, truncation=True, padding='max_length')
+    output = bert_model(**inputs)
+    last_hidden_states = output.last_hidden_state
+    cls_embeddings = last_hidden_states[:, 0, :].detach().numpy()
+    predictions = random_forest_model.predict(cls_embeddings)
+    return predictions[0]
+
 @app.route('/predict', methods=['POST'])
 def predict():
     img_paths = []  # Initialize img_paths at the beginning to ensure it's always defined
@@ -412,8 +428,9 @@ def predict():
 
             # Call the cut_image.py script as a subprocess
             subprocess.run(['python', 'index.py', image_path, left_image_path, right_image_path])
-            prediction_class = subprocess.run(['python', 'clf.py', question], capture_output=True, text=True, check=True)
-            
+            #prediction_class = subprocess.run(['python', 'clf.py', question], capture_output=True, text=True, check=True)
+            prediction_class = classify_question(question, tokenizer, bert_model, random_forest_model)
+
 
             # img_path รับจากข้างนอก  2 ภาพ ??????????????????????????????????????????????????????????????????/1
             # Assume img_path_1 and img_path_2 are the paths to your images

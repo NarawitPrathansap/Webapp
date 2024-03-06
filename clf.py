@@ -5,14 +5,13 @@ from transformers import BertTokenizer, BertModel
 import torch
 
 
-def classify_question(text, tokenizer, model, random_forest_model):
-    inputs = tokenizer(text, return_tensors="pt", max_length=512, truncation=True, padding='max_length')
-    with torch.no_grad():
-        train_output = model(**inputs)
-    last_hidden_states = train_output.last_hidden_state
+def classify_question(text, tokenizer, bert_model, random_forest_model):
+    inputs = tokenizer(text, return_tensors="tf", max_length=512, truncation=True, padding='max_length')
+    output = bert_model(inputs)
+    last_hidden_states = output.last_hidden_state
     cls_embeddings = last_hidden_states[:, 0, :]
-    predictions = random_forest_model.predict(cls_embeddings.detach().numpy())
-    return predictions
+    predictions = random_forest_model.predict(cls_embeddings.numpy())
+    return predictions[0]
 
 if __name__ == '__main__':
     text = " ".join(sys.argv[1:])  # Improved handling for text input from command line arguments

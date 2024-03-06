@@ -20,8 +20,8 @@
             margin: 20px auto;
             overflow: hidden;
         }
-        .image-container {
-            text-align: center;
+        .image-right-container {
+            text-align: right;
             margin-top: 20px;
         }
         img {
@@ -45,14 +45,38 @@
             font-size: 18px;
             margin-right: 10px;
         }
+
         a {
             display: inline-block;
-            margin-top: 20px;
+            margin-top: 80px;
             padding: 15px;
             background-color: #000;
             color: #fff;
             text-decoration: none;
             text-align: center;
+        }
+        h1 { 
+            font-size: 50px;
+            font-style: italic;
+        }
+        .image-left-container {
+            text-align: left; 
+            margin-top: 20px;
+        }
+        .chat-bubble-container-left {
+            display: flex;
+            justify-content: flex-start;
+            margin-top: 20px;
+        }
+        .chat-bubble-left {
+            background-color: #e5e5ea;
+            border-radius: 20px;
+            padding: 20px 30px;
+            color: #000;
+            max-width: 80%;
+            text-align: right;
+            font-size: 18px;
+            margin-right: 10px;
         }
         .shap-values-container {
             margin-top: 20px;
@@ -61,29 +85,27 @@
 </head>
 <body>
     <div class="navbar">
-        <h1>Prediction Result</h1>
+        <h1>DENTAI</h1>
     </div>
     
     <div class="container">
-        <div class="image-container">
-            <img src="{{ image_url }}" alt="Uploaded Image" title="Uploaded Image">
-            <img src="{{ selected_image_url }}" alt="Selected Image" title="Selected Image">
-            <!-- Corrected lines for displaying overlay images -->
-            <img src="{{ output_url_pos }}" alt="Positive Overlay Image" title="Positive Overlay">
-            <img src="{{ output_url_neg }}" alt="Negative Overlay Image" title="Negative Overlay">
+        <div class="image-right-container">
+             <img src="{{ image_url }}" alt="User Image">
         </div>
         
+        <!-- Chat Bubble Container for Right Alignment -->
         <div class="chat-bubble-container">
             <div class="chat-bubble">
                 <p><strong>Question:</strong> {{ question }}</p>
-                <p><strong>Age Prediction:</strong> {{ predicted_age }}</p>
-                <p><strong>Gender Prediction:</strong> {{ predictions_gender }}</p>
-                <p><strong>Answer:</strong> {{ answer_true }}</p>
             </div>
         </div>
-        
-        <div class="shap-values-container">
-            <p><strong>SHAP Values:</strong> {{ shap_values | safe }}</p>
+        <div class="image-left-container">
+            <img src="{{ selected_image_url }}" alt="User Image">
+        </div>
+        <div class="chat-bubble-container-left">
+            <div class="chat-bubble-left">
+                <p><strong>Age Prediction:</strong> {{ predicted_age }}</p>
+            </div>
         </div>
         
         <a href="{{ url_for('index') }}">Try another prediction</a>

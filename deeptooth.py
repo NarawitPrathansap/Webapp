@@ -412,9 +412,8 @@ def predict():
 
             # Call the cut_image.py script as a subprocess
             subprocess.run(['python', 'index.py', image_path, left_image_path, right_image_path])
-            result_clss = subprocess.run(['python', 'clf.py', question], capture_output=True, text=True, check=True)
-            prediction_class = json.loads(result_clss.stdout)
-
+            prediction_class = subprocess.run(['python', 'clf.py', question], capture_output=True, text=True, check=True)
+            
 
             # img_path รับจากข้างนอก  2 ภาพ ??????????????????????????????????????????????????????????????????/1
             # Assume img_path_1 and img_path_2 are the paths to your images

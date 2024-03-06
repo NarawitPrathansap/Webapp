@@ -490,8 +490,8 @@ def predict():
            gender_ans = "Female"
 
         # Run the classification model using subprocess
-        prediction = subprocess.run(['python', 'clf.py', question], capture_output=True, text=True)
-        prediction_class = prediction[0]
+        prediction_class = subprocess.run(['python', 'clf.py', question], capture_output=True, text=True)
+        print(prediction_class)
         
     
         

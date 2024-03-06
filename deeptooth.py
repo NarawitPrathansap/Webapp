@@ -34,6 +34,9 @@ model_7_23 = load_model('../Webapp/templates/26_Multi_1e-6_250_Unfreeze.h5')
 model_7_14 = load_model('../Webapp/templates/36_Multi_1e-5_500_Unfreeze.h5')
 model_15_23 = load_model('../Webapp/templates/25_Multi_1e-6_500_Unfreeze.h5')
 
+
+
+
 # 7-23
 height = width = model_7_23.input_shape[1]
 
@@ -487,10 +490,8 @@ def predict():
            gender_ans = "Female"
 
         # Run the classification model using subprocess
-        classification_result = subprocess.run(['python', 'clf.py', question], capture_output=True, text=True)
-        classification_output = classification_result.stdout
-        classification_response = json.loads(classification_output)
-        prediction_class = classification_response.get('prediction')
+        prediction_class = subprocess.run(['python', 'clf.py', question], capture_output=True, text=True)
+        
         
     
         

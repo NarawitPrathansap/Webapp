@@ -24,17 +24,13 @@ answers_db = {
 }
 
 def classify_question(text, tokenizer, model, random_forest_model):
-    inputs = tokenizer(text, return_tensors="pt", max_length=512, truncation=True, padding='max_length')
-    with torch.no_grad():
-        outputs = model(**inputs)
-    embeddings = outputs.pooler_output.numpy()
-    prediction = random_forest_model.predict(embeddings)
-    prediction_proba = random_forest_model.predict_proba(embeddings)
-    response = {
-        "prediction": int(prediction[0]),
-        "confidence": float(max(prediction_proba[0]))
-    }
-    return response
+    inputs = tokenizer(text, return_tensors="tf", max_length=512, truncation=True, padding='max_length')
+    train_output = model(inputs)
+    last_hidden_states = train_output.last_hidden_state
+    cls_embeddings = last_hidden_states[:, 0, :]
+    predictions = random_forest_model.predict(cls_embeddings.numpy())
+    predictions = predictions[0]
+    return predictions
 
 def fetch_answer(category, lang):
     # Placeholder for dynamic content based on prediction, such as 'gender' or 'age'

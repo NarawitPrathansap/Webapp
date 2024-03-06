@@ -562,31 +562,30 @@ def predict():
 
     # Depending on the prediction, generate an answer and choose the correct template and parameters
     if prediction_class == 0 or prediction_class == 1:
-        answer_1 = get_auto_lang_answer(prediction_class, age_ans if prediction_class == 1 else gender_ans, selected_bboxes_pos, question)
-        return render_template('predict2.html', image_url=image_url, question=question, answer=answer_1)
+        gender_or_age = gender_ans if prediction_class == 0 else age_ans
+        answer = get_auto_lang_answer(prediction_class, gender=gender_or_age, selected_bboxes_pos=selected_bboxes_pos, selected_bboxes_neg=selected_bboxes_neg, question=question)
+        return render_template('predict2.html', image_url=image_url, question=question, answer=answer)
 
-    elif prediction_class == 2 and predictions_highCon_Gender >= 0.5:
-        answer_2 = get_auto_lang_answer(prediction_class, gender_ans, selected_bboxes_pos, question)
-        output_url = output_url_pos if predictions_highCon_Gender >= 0.5 else None
-        return render_template('predict.html', image_url=image_url, question=question, answer=answer_2, output_url=output_url)
-    elif prediction_class == 2 and predictions_highCon_Gender < 0.5:
-        answer_3 = get_auto_lang_answer(prediction_class, gender_ans, selected_bboxes_neg, question)
-        output_url = output_url_neg if predictions_highCon_Gender <0.5 else None
-        return render_template('predict.html', image_url=image_url, question=question, answer=answer_3, output_url=output_url)
+    elif prediction_class == 2:
+        # Assuming 'predictions_highCon_Gender' is defined
+        selected_bboxes = selected_bboxes_pos if predictions_highCon_Gender >= 0.5 else selected_bboxes_neg
+        output_url = output_url_pos if predictions_highCon_Gender >= 0.5 else output_url_neg
+        answer = get_auto_lang_answer(prediction_class, gender=gender_ans, selected_bboxes_pos=selected_bboxes, question=question)
+        return render_template('predict.html', image_url=image_url, question=question, answer=answer, output_url=output_url)
 
-    elif prediction_class == 3 and age_ans <= 14:
-        answer_4 = get_auto_lang_answer(prediction_class, age_ans, selected_bboxes_pos, question)
-        output_url = output_url_neg if age_ans <= 14 else None
-        return render_template('predict.html', image_url=image_url, question=question, answer=answer_4, output_url=output_url)
-    elif prediction_class == 3 and age_ans > 14:
-        answer_5 = get_auto_lang_answer(prediction_class, age_ans, selected_bboxes_pos, question)
-        output_url = output_url_pos if age_ans > 14 else None
-        return render_template('predict.html', image_url=image_url, question=question, answer=answer_5, output_url=output_url)
+    elif prediction_class == 3:
+        # Assuming 'age_ans' is defined
+        output_url = output_url_neg if age_ans <= 14 else output_url_pos
+        answer = get_auto_lang_answer(prediction_class, age=age_ans, selected_bboxes_pos=selected_bboxes_pos, question=question)
+        return render_template('predict.html', image_url=image_url, question=question, answer=answer, output_url=output_url)
+
 
 
     elif prediction_class == 4:
-        answer_6 = get_auto_lang_answer(prediction_class, question,answer_6)
-        return render_template('predict3.html', image_url=image_url, question=question, answer=answer_6)
+    # Correctly call `get_auto_lang_answer` and assign its return value to `answer`
+        answer = get_auto_lang_answer(prediction_class, question=question)
+    # Use the `answer` variable in the call to `render_template`
+        return render_template('predict3.html', image_url=image_url, question=question, answer=answer)
 
 
                            

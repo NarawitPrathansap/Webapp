@@ -502,7 +502,8 @@ def predict():
            gender_ans = "Female"
 
         # Run the classification model using subprocess
-        prediction_class = subprocess.run(['python', 'clf.py', question], capture_output=True, text=True)
+        result_clss = subprocess.run(['python', 'clf.py', question], capture_output=True, text=True)
+        prediction_class = json.loads(result_clss.stdout)
         #prediction_class = 2
         #
         

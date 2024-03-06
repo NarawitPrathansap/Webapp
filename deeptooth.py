@@ -492,6 +492,7 @@ def predict():
         # Run the classification model using subprocess
         #prediction_class = subprocess.run(['python', 'clf.py', question], capture_output=True, text=True)
         prediction_class = 2
+        #
         
     
         

@@ -374,9 +374,9 @@ def get_auto_lang_answer(prediction_class, gender=None, age=None, selected_bboxe
             4: "Sorry, no answer available for this question."
         },
         "th": {
-            0: "เพศที่คาดการณ์ไว้จากภาพพาโนรามานี้คือ {gender}.",
-            1: "อายุที่ประเมินของบุคคลในภาพพาโนรามานี้คือ {age} ปี.",
-            2: "ตามภาพพาโนรามา, เพศที่คาดการณ์ได้คือ {gender}, โดยเน้นที่ {tooth_part}.",
+            0: "เพศที่คาดการณ์ไว้จากภาพถ่ายรังสีพาโนรามานี้คือ {gender}.",
+            1: "อายุที่ประเมินของบุคคลในภาพถ่ายรังสีพาโนรามานี้ได้คือ {age} ปี.",
+            2: "ตามภาพพาโนรามา, เพศที่ทำนายได้คือ {gender}, โดยดูจาก {tooth_part}.",
             3: "จากการวิเคราะห์ภาพพาโนรามา, อายุที่ประเมินได้คือ {age} ปี, โดยพิจารณาที่ {tooth_part}.",
             4: "ขออภัย, ไม่มีคำตอบสำหรับคำถามนี้."
         }
@@ -502,8 +502,8 @@ def predict():
            gender_ans = "Female"
 
         # Run the classification model using subprocess
-        #prediction_class = subprocess.run(['python', 'clf.py', question], capture_output=True, text=True)
-        prediction_class = 2
+        prediction_class = subprocess.run(['python', 'clf.py', question], capture_output=True, text=True)
+        #prediction_class = 2
         #
         
     

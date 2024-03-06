@@ -16,7 +16,7 @@ from keras.preprocessing.image import load_img, img_to_array
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-
+from langdetect import detect
 
 app = Flask(__name__)
 

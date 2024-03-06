@@ -24,13 +24,13 @@ answers_db = {
 }
 
 def classify_question(text, tokenizer, model, random_forest_model):
-    inputs = tokenizer(text, return_tensors="tf", max_length=512, truncation=True, padding='max_length')
-    train_output = model(inputs)
+    inputs = tokenizer(text, return_tensors="pt", max_length=512, truncation=True, padding='max_length')
+    with torch.no_grad():
+        train_output = model(**inputs)
     last_hidden_states = train_output.last_hidden_state
     cls_embeddings = last_hidden_states[:, 0, :]
-    predictions = random_forest_model.predict(cls_embeddings.numpy())
-    predictions = predictions[0]
-    return predictions
+    predictions = random_forest_model.predict(cls_embeddings.detach().numpy())
+    return predictions[0]
 
 def fetch_answer(category, lang):
     # Placeholder for dynamic content based on prediction, such as 'gender' or 'age'
@@ -60,5 +60,8 @@ if __name__ == '__main__':
     # Use handle_question function if you want to process the question and get an answer.
     # result = handle_question(text, tokenizer, bert_model, random_forest_model)
     # For direct classification and debugging:
-    result = classify_question(text, tokenizer, bert_model, random_forest_model)
-    print(json.dumps(result))
+    question = " ".join(sys.argv[1:])  # Capture the question from command line arguments
+    prediction = classify_question(question, tokenizer, random_forest_model, random_forest_model)
+
+    # Output the prediction so it can be captured by subprocess.run
+    print(json.dumps({"prediction": prediction}))

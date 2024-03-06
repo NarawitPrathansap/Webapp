@@ -581,7 +581,7 @@ def predict():
 
 
 
-    elif prediction_class == 4:
+    else:
     # Correctly call `get_auto_lang_answer` and assign its return value to `answer`
         answer = get_auto_lang_answer(prediction_class, question=question)
     # Use the `answer` variable in the call to `render_template`

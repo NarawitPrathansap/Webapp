@@ -412,7 +412,8 @@ def predict():
 
             # Call the cut_image.py script as a subprocess
             subprocess.run(['python', 'index.py', image_path, left_image_path, right_image_path])
-
+            result_clss = subprocess.run(['python', 'clf.py', question], capture_output=True, text=True, check=True)
+            prediction_class = json.loads(result_clss.stdout)
 
 
             # img_path รับจากข้างนอก  2 ภาพ ??????????????????????????????????????????????????????????????????/1
@@ -491,7 +492,7 @@ def predict():
         predictions_highCon_Age = predictions_highCon[0][0][0] # [0] บอกว่าดึงจาก layer ไหน [0][0] ถอด[[]]ออก
 
         age_ans = int(np.around(predictions_highCon_Age)) # array
-        
+
 
         # Access the classification result (output 1)
         predictions_highCon_Gender = predictions_highCon[1][0][0] # Use a threshold to determine the class
@@ -501,9 +502,14 @@ def predict():
         else:
            gender_ans = "Female"
 
+
+
+
+
+
+
         # Run the classification model using subprocess
-        result_clss = subprocess.run(['python', 'clf.py', question], capture_output=True, text=True)
-        prediction_class = json.loads(result_clss.stdout)
+
         #prediction_class = 2
         #
         

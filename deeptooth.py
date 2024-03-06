@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory
 from werkzeug.utils import secure_filename
-from PIL import Image, ImageOps
+from PIL import Image
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.preprocessing import image
@@ -8,9 +8,6 @@ from tensorflow.keras.applications.efficientnet import preprocess_input
 from tensorflow.keras.models import load_model
 from tensorflow.keras.applications import EfficientNetB0
 import os
-import requests
-import io
-import pickle
 import torch
 import subprocess
 import json
@@ -19,6 +16,8 @@ from keras.preprocessing.image import load_img, img_to_array
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
+
+
 app = Flask(__name__)
 
 from efficientnet.layers import Swish, DropConnect
@@ -58,6 +57,9 @@ def calculate_confident(value):
         confident = 1 - value #female
     return confident
 
+def get_tooth_parts(dataframe):
+    # Join all 'name' values from the dataframe
+    return ', '.join(dataframe['name'])
 
 
 app.config['UPLOAD_FOLDER'] = 'uploads/'
@@ -249,9 +251,9 @@ def plot_bboxes_on_image_pos(image_path, df, grayscale_image, output_path):
             # Add the rectangle to the axes
             ax.add_patch(rect)
             # Add confidence and class label as text
-            #text = f'Class: {class_label}'
+            text = f'Class: {class_label}'
             #\nConfidence: {confidence:.2f}'
-            #plt.text(abs_xmin, abs_ymin - 10, text, color='black', fontsize=8, bbox=dict(facecolor='white', alpha=0.5))
+            plt.text(abs_xmin, abs_ymin - 10, text, color='black', fontsize=8, bbox=dict(facecolor='white', alpha=0.5))
 
 
     plt.savefig(output_path)
@@ -324,13 +326,52 @@ def plot_bboxes_on_image_neg(image_path, df, grayscale_image, output_path):
             # Add the rectangle to the axes
             ax.add_patch(rect)
             # Add confidence and class label as text
-            #text = f'Class: {class_label}'
+            text = f'Class: {class_label}'
             #\nConfidence: {confidence:.2f}'
-           #plt.text(abs_xmin, abs_ymin - 10, text, color='black', fontsize=8, bbox=dict(facecolor='white', alpha=0.5))
+            plt.text(abs_xmin, abs_ymin - 10, text, color='black', fontsize=8, bbox=dict(facecolor='white', alpha=0.5))
     plt.savefig(output_path)
     plt.close()
 
     return selected_bboxes
+def get_auto_lang_answer(prediction_class, gender=None, age=None, selected_bboxes_pos=None, selected_bboxes_neg=None, question=''):
+    try:
+        detected_lang = detect(question)
+        language = 'th' if detected_lang == 'th' else 'en'
+    except Exception as e:
+        print(f"Language detection failed: {e}")  # Logging the exception
+        language = 'en'  # Default to English if detection fails
+
+    # Combining tooth parts from both positive and negative bboxes if they exist
+    tooth_parts = []
+    if selected_bboxes_pos is not None:
+        tooth_parts.extend(selected_bboxes_pos['name'].tolist())
+    if selected_bboxes_neg is not None:
+        tooth_parts.extend(selected_bboxes_neg['name'].tolist())
+    tooth_parts_str = ', '.join(tooth_parts)    
+
+    # Define answers database
+    answers_db = {
+        "en": {
+            0: "The predicted gender from this panoramic image is {gender}.",
+            1: "The estimated age of the individual in this panoramic image is {age} years.",
+            2: "Based on the panoramic image, the predicted gender is {gender}, with attention to the {tooth_part}.",
+            3: "From the panoramic analysis, the estimated age is {age} years, considering the {tooth_part}.",
+            4: "Sorry, no answer available for this question."
+        },
+        "th": {
+            0: "เพศที่คาดการณ์ไว้จากภาพพาโนรามานี้คือ {gender}.",
+            1: "อายุที่ประเมินของบุคคลในภาพพาโนรามานี้คือ {age} ปี.",
+            2: "ตามภาพพาโนรามา, เพศที่คาดการณ์ได้คือ {gender}, โดยเน้นที่ {tooth_part}.",
+            3: "จากการวิเคราะห์ภาพพาโนรามา, อายุที่ประเมินได้คือ {age} ปี, โดยพิจารณาที่ {tooth_part}.",
+            4: "ขออภัย, ไม่มีคำตอบสำหรับคำถามนี้."
+        }
+    }
+
+    # Continue with your existing logic
+    answer_template = answers_db[language].get(prediction_class, "")
+    answer = answer_template.format(gender=gender, age=age, tooth_part=tooth_parts_str)
+    
+    return answer
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -450,16 +491,7 @@ def predict():
         classification_response = json.loads(classification_output)
         prediction_class = classification_response.get('prediction')
         
-        if prediction_class == 0:
-            answer = gender_ans
-        if prediction_class == 1:
-            answer = age_ans
-        if prediction_class == 2:
-            answer = gender_ans +"Where"
-        if prediction_class == 3:
-            answer = age_ans + "Where"
-        if prediction_class == 4:
-            answer = "Sorry, no answer available for this question."
+    
         
         # Assuming `background_user_upload_image` is the path to the user uploaded image
         background_user_upload_image = img
@@ -515,7 +547,6 @@ def predict():
 
 
 
-
         output_path_pos = os.path.join(app.config['UPLOAD_FOLDER'], 'output_pos.png')
         output_path_neg = os.path.join(app.config['UPLOAD_FOLDER'], 'output_neg.png')
 
@@ -529,13 +560,36 @@ def predict():
         output_url_pos = url_for('uploaded_file', filename='output_pos.png')
         output_url_neg = url_for('uploaded_file', filename='output_neg.png')
 
-    return render_template('predict.html', image_url=image_url, selected_image_url=selected_image_url,
-                           question=question, predicted_age=age_ans, predictions_gender=gender_ans,
-                           shap_values=shap_values, answer_true=answer, output_url_pos=output_url_pos,
-                           output_url_neg=output_url_neg)
+    # Depending on the prediction, generate an answer and choose the correct template and parameters
+    if prediction_class == 0 or prediction_class == 1:
+        answer_1 = get_auto_lang_answer(prediction_class, age_ans if prediction_class == 1 else gender_ans, selected_bboxes_pos, question)
+        return render_template('predict2.html', image_url=image_url, question=question, answer=answer_1)
+
+    elif prediction_class == 2 and predictions_highCon_Gender >= 0.5:
+        answer_2 = get_auto_lang_answer(prediction_class, gender_ans, selected_bboxes_pos, question)
+        output_url = output_url_pos if predictions_highCon_Gender >= 0.5 else None
+        return render_template('predict.html', image_url=image_url, question=question, answer=answer_2, output_url=output_url)
+    elif prediction_class == 2 and predictions_highCon_Gender < 0.5:
+        answer_3 = get_auto_lang_answer(prediction_class, gender_ans, selected_bboxes_neg, question)
+        output_url = output_url_neg if predictions_highCon_Gender <0.5 else None
+        return render_template('predict.html', image_url=image_url, question=question, answer=answer_3, output_url=output_url)
+
+    elif prediction_class == 3 and age_ans <= 14:
+        answer_4 = get_auto_lang_answer(prediction_class, age_ans, selected_bboxes_pos, question)
+        output_url = output_url_neg if age_ans <= 14 else None
+        return render_template('predict.html', image_url=image_url, question=question, answer=answer_4, output_url=output_url)
+    elif prediction_class == 3 and age_ans > 14:
+        answer_5 = get_auto_lang_answer(prediction_class, age_ans, selected_bboxes_pos, question)
+        output_url = output_url_pos if age_ans > 14 else None
+        return render_template('predict.html', image_url=image_url, question=question, answer=answer_5, output_url=output_url)
 
 
+    elif prediction_class == 4:
+        answer_6 = get_auto_lang_answer(prediction_class, question,answer_6)
+        return render_template('predict3.html', image_url=image_url, question=question, answer=answer_6)
 
+
+                           
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0',debug=True,port=5001)#host='0.0.0.0',port=5001

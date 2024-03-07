@@ -562,7 +562,7 @@ def predict():
         shap_values_1 = np.array(shap_values)
 
         # Perform the processing as before
-        image_array = shap_values_1[0]
+        image_array = np.array(shap_values[0])
         positive = np.where(image_array >= 0, image_array, 0)
         negative = np.where(image_array < 0, image_array, 0)
         negative_aps = np.abs(negative)

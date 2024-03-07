@@ -598,17 +598,17 @@ def predict():
             grayscale_neg_thresholded[grayscale_neg_thresholded < percentile_95_neg] = 0
 
 
-            df_yolo_results = detect_image(img)  # Make sure 'detect' returns a DataFrame with YOLO detection results
+        df_yolo_results = detect_image(img)  # Make sure 'detect' returns a DataFrame with YOLO detection results
 
-            output_path_pos = os.path.join(app.config['UPLOAD_FOLDER'], 'output_pos.png')
-            output_path_neg = os.path.join(app.config['UPLOAD_FOLDER'], 'output_neg.png')
+        output_path_pos = os.path.join(app.config['UPLOAD_FOLDER'], 'output_pos.png')
+        output_path_neg = os.path.join(app.config['UPLOAD_FOLDER'], 'output_neg.png')
 
-            # Assuming grayscale_pos_thresholded and grayscale_neg_thresholded are defined and ready to use
-            selected_bboxes_pos = plot_bboxes_on_image_pos(img, df_yolo_results, grayscale_pos_thresholded, output_path_pos)
-            selected_bboxes_neg = plot_bboxes_on_image_neg(img, df_yolo_results, grayscale_neg_thresholded, output_path_neg)
-            # Convert server paths to web-accessible URLs
-            output_url_pos = url_for('uploaded_file', filename='output_pos.png')
-            output_url_neg = url_for('uploaded_file', filename='output_neg.png')
+        # Assuming grayscale_pos_thresholded and grayscale_neg_thresholded are defined and ready to use
+        selected_bboxes_pos = plot_bboxes_on_image_pos(img, df_yolo_results, grayscale_pos_thresholded, output_path_pos)
+        selected_bboxes_neg = plot_bboxes_on_image_neg(img, df_yolo_results, grayscale_neg_thresholded, output_path_neg)
+        # Convert server paths to web-accessible URLs
+        output_url_pos = url_for('uploaded_file', filename='output_pos.png')
+        output_url_neg = url_for('uploaded_file', filename='output_neg.png')
 
         # Depending on the prediction, generate an answer and choose the correct template and parameters
         if prediction_class == 0 or prediction_class == 1:

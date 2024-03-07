@@ -450,46 +450,47 @@ def predict():
                 shap_values = explainer15_23_gender.shap_values(reshaped_user_uploaded_image)
             elif prediction_class == 3:
                 shap_values = explainer15_23_age.shap_values(reshaped_user_uploaded_image)
-    
-        shap_values_1 = np.array(shap_values)
-        # Perform the processing as before
-        image_array = shap_values_1[0]
-        positive = np.where(image_array >= 0, image_array, 0)
-        negative = np.where(image_array < 0, image_array, 0)
-        negative_aps = np.abs(negative)
-        flattened_array_pos = positive.flatten()
-        flattened_array_neg = negative_aps.flatten()
-        normalized_array_pos = (flattened_array_pos - np.min(flattened_array_pos)) / (np.max(flattened_array_pos) - np.min(flattened_array_pos))
-        normalized_array_neg = (flattened_array_neg - np.min(flattened_array_neg)) / (np.max(flattened_array_neg) - np.min(flattened_array_neg))
-        normalized_positive = normalized_array_pos.reshape(positive.shape)
-        normalized_neg = normalized_array_neg.reshape(negative_aps.shape)
-        grayscale_image_pos = normalized_positive / 3.0
-        grayscale_image_neg = normalized_neg / 3.0
-        print(grayscale_image_neg.shape)
-        grayscale_image_positive = np.mean(grayscale_image_pos, axis=-1)
-        grayscale_image_negative = np.mean(grayscale_image_neg, axis=-1)
-        grayscale_image_positive = grayscale_image_positive.squeeze()
-        grayscale_image_negative = grayscale_image_negative.squeeze()
-        percentile_95_pos = np.percentile(grayscale_image_positive, 95)
-        percentile_95_neg = np.percentile(grayscale_image_negative, 95)
-        grayscale_pos_thresholded = grayscale_image_positive
-        grayscale_neg_thresholded = grayscale_image_negative
-        grayscale_pos_thresholded[grayscale_pos_thresholded < percentile_95_pos] = 0
-        grayscale_neg_thresholded[grayscale_neg_thresholded < percentile_95_neg] = 0
-        output_path_pos = os.path.join(app.config['UPLOAD_FOLDER'], 'output_pos.png')
-        output_path_neg = os.path.join(app.config['UPLOAD_FOLDER'], 'output_neg.png')
-        # Proceed with detection and plotting
-        df_yolo_results = detect(img)  # Make sure 'detect' returns a DataFrame with YOLO detection results
-        # Assuming grayscale_pos_thresholded and grayscale_neg_thresholded are defined and ready to use
-        selected_bboxes_pos = plot_bboxes_on_image_pos(img, df_yolo_results, grayscale_pos_thresholded, output_path_pos)
-        selected_bboxes_neg = plot_bboxes_on_image_neg(img, df_yolo_results, grayscale_neg_thresholded, output_path_neg)
-    # Convert server paths to web-accessible URLs
-        output_url_pos = url_for('uploaded_file', filename='output_pos.png')
-        output_url_neg = url_for('uploaded_file', filename='output_neg.png')
+        if shap_values is not None:
+            shap_values_1 = np.array(shap_values)
+            # Perform the processing as before
+            image_array = shap_values_1[0]
+            positive = np.where(image_array >= 0, image_array, 0)
+            negative = np.where(image_array < 0, image_array, 0)
+            negative_aps = np.abs(negative)
+            flattened_array_pos = positive.flatten()
+            flattened_array_neg = negative_aps.flatten()
+            normalized_array_pos = (flattened_array_pos - np.min(flattened_array_pos)) / (np.max(flattened_array_pos) - np.min(flattened_array_pos))
+            normalized_array_neg = (flattened_array_neg - np.min(flattened_array_neg)) / (np.max(flattened_array_neg) - np.min(flattened_array_neg))
+            normalized_positive = normalized_array_pos.reshape(positive.shape)
+            normalized_neg = normalized_array_neg.reshape(negative_aps.shape)
+            grayscale_image_pos = normalized_positive / 3.0
+            grayscale_image_neg = normalized_neg / 3.0
+            print(grayscale_image_neg.shape)
+            grayscale_image_positive = np.mean(grayscale_image_pos, axis=-1)
+            grayscale_image_negative = np.mean(grayscale_image_neg, axis=-1)
+            grayscale_image_positive = grayscale_image_positive.squeeze()
+            grayscale_image_negative = grayscale_image_negative.squeeze()
+            percentile_95_pos = np.percentile(grayscale_image_positive, 95)
+            percentile_95_neg = np.percentile(grayscale_image_negative, 95)
+            grayscale_pos_thresholded = grayscale_image_positive
+            grayscale_neg_thresholded = grayscale_image_negative
+            grayscale_pos_thresholded[grayscale_pos_thresholded < percentile_95_pos] = 0
+            grayscale_neg_thresholded[grayscale_neg_thresholded < percentile_95_neg] = 0
+
+            # Proceed with detection and plotting
+            df_yolo_results = detect(img)  # Make sure 'detect' returns a DataFrame with YOLO detection results
+            # Assuming grayscale_pos_thresholded and grayscale_neg_thresholded are defined and ready to use
+            output_path_pos = os.path.join(app.config['UPLOAD_FOLDER'], 'output_pos.png')
+            output_path_neg = os.path.join(app.config['UPLOAD_FOLDER'], 'output_neg.png')
+            selected_bboxes_pos = plot_bboxes_on_image_pos(img, df_yolo_results, grayscale_pos_thresholded, output_path_pos)
+            selected_bboxes_neg = plot_bboxes_on_image_neg(img, df_yolo_results, grayscale_neg_thresholded, output_path_neg)
+        # Convert server paths to web-accessible URLs
+            output_url_pos = url_for('uploaded_file', filename='output_pos.png')
+            output_url_neg = url_for('uploaded_file', filename='output_neg.png')
         # Depending on the prediction, generate an answer and choose the correct template and parameters
         if prediction_class == 0 or prediction_class == 1:
             gender_or_age = gender_ans if prediction_class == 0 else age_ans
-            answer = get_auto_lang_answer(prediction_class, gender=gender_or_age, selected_bboxes_pos=selected_bboxes_pos, selected_bboxes_neg=selected_bboxes_neg, question=question)
+            answer = get_auto_lang_answer(prediction_class, gender=gender_or_age, question=question)
             return render_template('predict2.html', image_url=image_url, question=question, answer=answer)
         elif prediction_class == 2:
             # Assuming 'predictions_highCon_Gender' is defined

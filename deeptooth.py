@@ -377,6 +377,30 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+# Define the base path for your images
+images_base_path = "../Webapp/images"
+
+
+# Create background data using the process_input function
+background_train = process_input(images_base_path)
+
+# Convert background data to numpy array
+background_train_np = np.array(background_train)
+
+
+# Create separate models for each output you want to explain
+model7_14_age = tf.keras.Model(inputs=model_7_14.input, outputs=model_7_14.get_layer('Prediction_Age').output)
+model7_14_gender = tf.keras.Model(inputs=model_7_14.input, outputs=model_7_14.get_layer('Prediction_Gender').output)
+model15_23_age = tf.keras.Model(inputs=model_15_23.input, outputs=model_15_23.get_layer('Prediction_Age').output)
+model15_23_gender = tf.keras.Model(inputs=model_15_23.input, outputs=model_15_23.get_layer('Prediction_Gender').output)
+
+# Create a GradientExplainer with the background data
+explainer7_14_age = shap.GradientExplainer(model7_14_age, background_train_np)
+explainer7_14_gender = shap.GradientExplainer(model7_14_gender, background_train_np)
+explainer15_23_age = shap.GradientExplainer(model15_23_age, background_train_np)
+explainer15_23_gender = shap.GradientExplainer(model15_23_gender, background_train_np)
+
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -503,29 +527,6 @@ def predict():
                 gender_ans = "Male"
             else:
                 gender_ans = "Female"
-
-                    # Define the base path for your images
-            images_base_path = "../Webapp/images"
-
-
-            # Create background data using the process_input function
-            background_train = process_input(images_base_path)
-
-            # Convert background data to numpy array
-            background_train_np = np.array(background_train)
-
-
-            # Create separate models for each output you want to explain
-            model7_14_age = tf.keras.Model(inputs=model_7_14.input, outputs=model_7_14.get_layer('Prediction_Age').output)
-            model7_14_gender = tf.keras.Model(inputs=model_7_14.input, outputs=model_7_14.get_layer('Prediction_Gender').output)
-            model15_23_age = tf.keras.Model(inputs=model_15_23.input, outputs=model_15_23.get_layer('Prediction_Age').output)
-            model15_23_gender = tf.keras.Model(inputs=model_15_23.input, outputs=model_15_23.get_layer('Prediction_Gender').output)
-
-            # Create a GradientExplainer with the background data
-            explainer7_14_age = shap.GradientExplainer(model7_14_age, background_train_np)
-            explainer7_14_gender = shap.GradientExplainer(model7_14_gender, background_train_np)
-            explainer15_23_age = shap.GradientExplainer(model15_23_age, background_train_np)
-            explainer15_23_gender = shap.GradientExplainer(model15_23_gender, background_train_np)
 
             # Assuming `background_user_upload_image` is the path to the user uploaded image
             background_user_upload_image = img

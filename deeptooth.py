@@ -148,7 +148,7 @@ def compute_iou(boxA, boxB):
 
     return iou
 
-def nms_per_class(df, iou_threshold=0.6):
+def nms_per_class(df, iou_threshold=0.5):
     # Initialize an empty DataFrame to store NMS results
     df_nms = pd.DataFrame()
 
@@ -187,7 +187,7 @@ def nms_per_class(df, iou_threshold=0.6):
 
 
 
-def detect(image_path):
+def detect_image(image_path):
     # Load the model
     weights_path = '../Webapp/templates/best.pt'
     yolo_model = torch.hub.load('ultralytics/yolov5', 'custom', path=weights_path)
@@ -602,7 +602,7 @@ def predict():
         output_path_neg = os.path.join(app.config['UPLOAD_FOLDER'], 'output_neg.png')
 
         # Proceed with detection and plotting
-        df_yolo_results = detect(img)  # Make sure 'detect' returns a DataFrame with YOLO detection results
+        df_yolo_results = detect_image(img)  # Make sure 'detect' returns a DataFrame with YOLO detection results
 
         # Assuming grayscale_pos_thresholded and grayscale_neg_thresholded are defined and ready to use
         selected_bboxes_pos = plot_bboxes_on_image_pos(img, df_yolo_results, grayscale_pos_thresholded, output_path_pos)

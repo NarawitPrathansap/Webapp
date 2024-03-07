@@ -148,7 +148,7 @@ def compute_iou(boxA, boxB):
 
     return iou
 
-def nms_per_class(df, iou_threshold=0.5):
+def nms_per_class(df, iou_threshold=0.6):
     # Initialize an empty DataFrame to store NMS results
     df_nms = pd.DataFrame()
 

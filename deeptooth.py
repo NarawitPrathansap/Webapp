@@ -557,11 +557,6 @@ def predict():
             elif prediction_class == 3:
                 shap_values = explainer15_23_age.shap_values(reshaped_user_uploaded_image)
 
-   
-        if prediction_class in [0, 1]:
-            print("No need to calculate SHAP values for class 0 or 1")
-    
-        else:
             # Perform the processing as before
             data = [np.array(shap_values)]
             image_array = data[0]

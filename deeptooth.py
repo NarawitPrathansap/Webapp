@@ -71,8 +71,6 @@ def calculate_confident(value):
 def get_tooth_parts(dataframe):
     # Join all 'name' values from the dataframe
     return ', '.join(dataframe['name'])
-
-
 def process_input(images_directory):
     background_data = []
     image_paths = [os.path.join(images_directory, f) for f in os.listdir(images_directory) if os.path.isfile(os.path.join(images_directory, f))]
@@ -102,6 +100,8 @@ def uploaded_file(filename):
 @app.route('/')
 def index():
     return render_template('index.html')
+
+
 
 
 # Define the base path for your images
@@ -412,8 +412,7 @@ def predict():
             print('No file part')
             return redirect(request.url)
         image = request.files['image']
-        question = request.args.get('question', '')
-        print(question)
+        question = request.form.get('question', '')
         if image.filename == '':
             print('No selected file')
             return redirect(request.url)
@@ -563,7 +562,8 @@ def predict():
    
 
         # Perform the processing as before
-        image_array = np.array(shap_values[0])
+        data = [np.array(shap_values)]
+        image_array = data[0]
         positive = np.where(image_array >= 0, image_array, 0)
         negative = np.where(image_array < 0, image_array, 0)
         negative_aps = np.abs(negative) 
@@ -579,36 +579,33 @@ def predict():
 
         grayscale_image_pos = normalized_positive / 3.0
         grayscale_image_neg = normalized_neg / 3.0
-        print(grayscale_image_neg.shape)
+        print(grayscale_image_pos.shape)
         grayscale_image_positive = np.mean(grayscale_image_pos, axis=-1)
         grayscale_image_negative = np.mean(grayscale_image_neg, axis=-1)
+        print(grayscale_image_positive.shape)
 
+        grayscale_image_p = grayscale_image_positive.squeeze()
+        grayscale_image_n = grayscale_image_negative.squeeze()
 
-        grayscale_image_positive = grayscale_image_positive.squeeze()
-        grayscale_image_negative = grayscale_image_negative.squeeze()
+        percentile_95_pos = np.percentile(grayscale_image_p, 95)
+        percentile_95_neg = np.percentile(grayscale_image_n, 95)
 
-        percentile_95_pos = np.percentile(grayscale_image_positive, 95)
-        percentile_95_neg = np.percentile(grayscale_image_negative, 95)
-
-        grayscale_pos_thresholded = grayscale_image_positive
-        grayscale_neg_thresholded = grayscale_image_negative
+        grayscale_pos_thresholded = grayscale_image_p
+        grayscale_neg_thresholded = grayscale_image_n
 
         grayscale_pos_thresholded[grayscale_pos_thresholded < percentile_95_pos] = 0
         grayscale_neg_thresholded[grayscale_neg_thresholded < percentile_95_neg] = 0
 
 
-
+        df_yolo_results = detect_image(img)  # Make sure 'detect' returns a DataFrame with YOLO detection results
 
         output_path_pos = os.path.join(app.config['UPLOAD_FOLDER'], 'output_pos.png')
         output_path_neg = os.path.join(app.config['UPLOAD_FOLDER'], 'output_neg.png')
 
-        # Proceed with detection and plotting
-        df_yolo_results = detect_image(img)  # Make sure 'detect' returns a DataFrame with YOLO detection results
-
         # Assuming grayscale_pos_thresholded and grayscale_neg_thresholded are defined and ready to use
         selected_bboxes_pos = plot_bboxes_on_image_pos(img, df_yolo_results, grayscale_pos_thresholded, output_path_pos)
         selected_bboxes_neg = plot_bboxes_on_image_neg(img, df_yolo_results, grayscale_neg_thresholded, output_path_neg)
-    # Convert server paths to web-accessible URLs
+        # Convert server paths to web-accessible URLs
         output_url_pos = url_for('uploaded_file', filename='output_pos.png')
         output_url_neg = url_for('uploaded_file', filename='output_neg.png')
 

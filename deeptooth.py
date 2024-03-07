@@ -138,7 +138,7 @@ def nms_per_class(df, iou_threshold=0.5):
         # Append results for this class to the main DataFrame
         df_nms = pd.concat([df_nms, df_nms_class], ignore_index=True)
     return df_nms
-def detect(image_path):
+def detect_yolo(image_path):
     # Load the model
     weights_path = '../Webapp/templates/best.pt'
     yolo_model = torch.hub.load('ultralytics/yolov5', 'custom', path=weights_path)
@@ -473,7 +473,7 @@ def predict():
             grayscale_neg_thresholded[grayscale_neg_thresholded < percentile_95_neg] = 0
 
             # Proceed with detection and plotting
-            df_yolo_results = detect(img)  # Make sure 'detect' returns a DataFrame with YOLO detection results
+            df_yolo_results = detect_yolo(img)  # Make sure 'detect' returns a DataFrame with YOLO detection results
             # Assuming grayscale_pos_thresholded and grayscale_neg_thresholded are defined and ready to use
             output_path_pos = os.path.join(app.config['UPLOAD_FOLDER'], 'output_pos.png')
             output_path_neg = os.path.join(app.config['UPLOAD_FOLDER'], 'output_neg.png')

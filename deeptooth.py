@@ -73,21 +73,6 @@ def get_tooth_parts(dataframe):
     return ', '.join(dataframe['name'])
 
 
-app.config['UPLOAD_FOLDER'] = 'uploads/'
-
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-@app.route('/uploads/<filename>')
-def uploaded_file(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
-
-@app.route('/')
-def index():
-    return render_template('index.html')
-
 def process_input(images_directory):
     background_data = []
     image_paths = [os.path.join(images_directory, f) for f in os.listdir(images_directory) if os.path.isfile(os.path.join(images_directory, f))]
@@ -102,6 +87,21 @@ def process_input(images_directory):
             print(f"Error loading image {image_path}: {e}")
 
     return np.array(background_data)
+
+app.config['UPLOAD_FOLDER'] = 'uploads/'
+
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 
 # Define the base path for your images
@@ -412,7 +412,8 @@ def predict():
             print('No file part')
             return redirect(request.url)
         image = request.files['image']
-        question = request.form.get('question', '')
+        question = request.args.get('question', '')
+        print(question)
         if image.filename == '':
             print('No selected file')
             return redirect(request.url)

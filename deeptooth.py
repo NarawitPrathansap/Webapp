@@ -22,6 +22,9 @@ import json
 from joblib import load
 from transformers import BertTokenizer, BertModel
 
+
+
+
 app = Flask(__name__)
 
 from efficientnet.layers import Swish, DropConnect
@@ -89,22 +92,10 @@ def process_input(images_directory):
         except Exception as e:
             print(f"Error loading image {image_path}: {e}")
     return np.array(background_data)
-# Define the base path for your images
-images_base_path = "../Webapp/images"
-# Create background data using the process_input function
-background_train = process_input(images_base_path)
-# Convert background data to numpy array
-background_train_np = np.array(background_train)
-# Create separate models for each output you want to explain
-model7_14_age = tf.keras.Model(inputs=model_7_14.input, outputs=model_7_14.get_layer('Prediction_Age').output)
-model7_14_gender = tf.keras.Model(inputs=model_7_14.input, outputs=model_7_14.get_layer('Prediction_Gender').output)
-model15_23_age = tf.keras.Model(inputs=model_15_23.input, outputs=model_15_23.get_layer('Prediction_Age').output)
-model15_23_gender = tf.keras.Model(inputs=model_15_23.input, outputs=model_15_23.get_layer('Prediction_Gender').output)
-# Create a GradientExplainer with the background data
-explainer7_14_age = shap.GradientExplainer(model7_14_age, background_train_np)
-explainer7_14_gender = shap.GradientExplainer(model7_14_gender, background_train_np)
-explainer15_23_age = shap.GradientExplainer(model15_23_age, background_train_np)
-explainer15_23_gender = shap.GradientExplainer(model15_23_gender, background_train_np)
+
+
+
+
 def compute_iou(boxA, boxB):
     # Determine the coordinates of the intersection rectangle
     xA = max(boxA[0], boxB[0])
@@ -323,6 +314,24 @@ def classify_question(text, tokenizer, bert_model, random_forest_model):
     predictions = random_forest_model.predict(cls_embeddings)
     return predictions[0]
 
+
+# Define the base path for your images
+images_base_path = "../Webapp/images"
+# Create background data using the process_input function
+background_train = process_input(images_base_path)
+# Convert background data to numpy array
+background_train_np = np.array(background_train)
+# Create separate models for each output you want to explain
+model7_14_age = tf.keras.Model(inputs=model_7_14.input, outputs=model_7_14.get_layer('Prediction_Age').output)
+model7_14_gender = tf.keras.Model(inputs=model_7_14.input, outputs=model_7_14.get_layer('Prediction_Gender').output)
+model15_23_age = tf.keras.Model(inputs=model_15_23.input, outputs=model_15_23.get_layer('Prediction_Age').output)
+model15_23_gender = tf.keras.Model(inputs=model_15_23.input, outputs=model_15_23.get_layer('Prediction_Gender').output)
+# Create a GradientExplainer with the background data
+explainer7_14_age = shap.GradientExplainer(model7_14_age, background_train_np)
+explainer7_14_gender = shap.GradientExplainer(model7_14_gender, background_train_np)
+explainer15_23_age = shap.GradientExplainer(model15_23_age, background_train_np)
+explainer15_23_gender = shap.GradientExplainer(model15_23_gender, background_train_np)
+
 @app.route('/predict', methods=['POST'])
 def predict():
     img_paths = []  # Initialize img_paths at the beginning to ensure it's always defined
@@ -415,11 +424,11 @@ def predict():
            gender_ans = "Male"
         else:
            gender_ans = "Female"
-        # Run the classification model using subprocess
-        #prediction_class = 2
-        #
-        
-    
+
+           
+
+
+
         
         # Assuming `background_user_upload_image` is the path to the user uploaded image
         background_user_upload_image = img
@@ -431,6 +440,16 @@ def predict():
         reshaped_user_uploaded_image = np.expand_dims(preprocessed_user_uploaded_image, axis=0)
         # Calculate SHAP values
         shap_values = explainer15_23_gender.shap_values(reshaped_user_uploaded_image)
+        if model == model_7_14:
+            if prediction_class == 2:
+                shap_values = explainer7_14_gender.shap_values(reshaped_user_uploaded_image)
+            elif prediction_class == 3:
+                shap_values = explainer7_14_age.shap_values(reshaped_user_uploaded_image)
+        elif model == model_15_23:
+            if prediction_class == 2:
+                shap_values = explainer15_23_gender.shap_values(reshaped_user_uploaded_image)
+            elif prediction_class == 3:
+                shap_values = explainer15_23_age.shap_values(reshaped_user_uploaded_image)
     
         shap_values_1 = np.array(shap_values)
         # Perform the processing as before

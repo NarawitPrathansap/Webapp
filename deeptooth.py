@@ -436,205 +436,205 @@ def predict():
             left_image_path = os.path.join(app.config['UPLOAD_FOLDER'], left_image_filename)
             right_image_path = os.path.join(app.config['UPLOAD_FOLDER'], right_image_filename)
 
-            # Call the cut_image.py script as a subprocess
-            subprocess.run(['python', 'index.py', image_path, left_image_path, right_image_path])
-            #prediction_class = subprocess.run(['python', 'clf.py', question], capture_output=True, text=True, check=True)
-            prediction_class = classify_question(question, tokenizer, bert_model, random_forest_model)
+        # Call the cut_image.py script as a subprocess
+        subprocess.run(['python', 'index.py', image_path, left_image_path, right_image_path])
+        #prediction_class = subprocess.run(['python', 'clf.py', question], capture_output=True, text=True, check=True)
+        prediction_class = classify_question(question, tokenizer, bert_model, random_forest_model)
 
 
-            # img_path รับจากข้างนอก  2 ภาพ ??????????????????????????????????????????????????????????????????/1
-            # Assume img_path_1 and img_path_2 are the paths to your images
-            img_paths = [left_image_path, right_image_path]  # Using the results from cut_image.py
+        # img_path รับจากข้างนอก  2 ภาพ ??????????????????????????????????????????????????????????????????/1
+        # Assume img_path_1 and img_path_2 are the paths to your images
+        img_paths = [left_image_path, right_image_path]  # Using the results from cut_image.py
 
 
-            pred_list_regression = []  # Store regression results
-            pred_list_classification = []  # Store binary classification results
+        pred_list_regression = []  # Store regression results
+        pred_list_classification = []  # Store binary classification results
 
             ##img_path = test['Path_Name'].tolist()
 
-            for i in range(len(img_paths)):
-                predictions = predict_image(img_paths[i], model_7_23, height, width)
+        for i in range(len(img_paths)):
+            predictions = predict_image(img_paths[i], model_7_23, height, width)
 
-                # Access the regression result (output 0)
-                regression_result = predictions[0]
-
-                # Access the classification result (output 1)
-                classification_result = predictions[1] # Use a threshold to determine the class
-
-                pred_list_regression.append(regression_result)
-                pred_list_classification.append(classification_result)
-
-
-            # Gender prediction
-            list_Classification_predict = []
-            for i in pred_list_classification:
-                i = i[0][0]
-                list_Classification_predict.append(i)
-
-
-            con_0 = calculate_confident(list_Classification_predict[0])
-            con_1 = calculate_confident(list_Classification_predict[1])
-
-            # ดูว่าค่าไหนมากที่สุด
-            max_confident = max(con_0, con_1)
-            print("Maximum confident value:", max_confident)
-
-            # Choose an image based on confidence values
-            if con_0 > con_1:
-                img = left_image_path  # Path to the first (left) image
-            elif con_1 > con_0:
-                img = right_image_path  # Path to the second (right) image
-            else:  # If confidence values are equal
-                img = left_image_path  # Default to the first (left) image path
-
-
-            # ทำนายค่าอายุของภาพที่ลือก
-            # Age prediction
-            if con_0 > con_1:
-                predict_age = pred_list_regression[0][0][0]
-            elif con_1 > con_0:
-                predict_age = pred_list_regression[1][0][0]
-            else: # ถ้าเท่ากัน 
-                predict_age = pred_list_regression[0][0][0]
-
-            age_predict = np.around(predict_age) # array
-            age_predict # ได้ค่าอายุมาแล้ว
-
-
-            # เลือกตัวแบบ
-            if age_predict <= 14:
-                model = model_7_14
-                print('Age between 7-14 years')
-            else: 
-                model = model_15_23
-                print('Age between 15-23 years')
-
-            image_url = url_for('uploaded_file', filename=filename) # For the original uploaded image
-            selected_image_url = url_for('uploaded_file', filename=os.path.basename(img)) # For the selected image after processing
-
-            predictions_highCon = predict_image(img, model, height, width) # ภาพที่เลือก
-            
             # Access the regression result (output 0)
-            predictions_highCon_Age = predictions_highCon[0][0][0] # [0] บอกว่าดึงจาก layer ไหน [0][0] ถอด[[]]ออก
-
-            age_ans = int(np.around(predictions_highCon_Age)) # array
-
+            regression_result = predictions[0]
 
             # Access the classification result (output 1)
-            predictions_highCon_Gender = predictions_highCon[1][0][0] # Use a threshold to determine the class
+            classification_result = predictions[1] # Use a threshold to determine the class
+
+            pred_list_regression.append(regression_result)
+            pred_list_classification.append(classification_result)
+
+
+        # Gender prediction
+        list_Classification_predict = []
+        for i in pred_list_classification:
+            i = i[0][0]
+            list_Classification_predict.append(i)
+
+
+        con_0 = calculate_confident(list_Classification_predict[0])
+        con_1 = calculate_confident(list_Classification_predict[1])
+
+        # ดูว่าค่าไหนมากที่สุด
+        max_confident = max(con_0, con_1)
+        print("Maximum confident value:", max_confident)
+
+        # Choose an image based on confidence values
+        if con_0 > con_1:
+            img = left_image_path  # Path to the first (left) image
+        elif con_1 > con_0:
+            img = right_image_path  # Path to the second (right) image
+        else:  # If confidence values are equal
+            img = left_image_path  # Default to the first (left) image path
+
+
+        # ทำนายค่าอายุของภาพที่ลือก
+        # Age prediction
+        if con_0 > con_1:
+            predict_age = pred_list_regression[0][0][0]
+        elif con_1 > con_0:
+            predict_age = pred_list_regression[1][0][0]
+        else: # ถ้าเท่ากัน 
+            predict_age = pred_list_regression[0][0][0]
+
+        age_predict = np.around(predict_age) # array
+        age_predict # ได้ค่าอายุมาแล้ว
+
+
+        # เลือกตัวแบบ
+        if age_predict <= 14:
+            model = model_7_14
+            print('Age between 7-14 years')
+        else: 
+            model = model_15_23
+            print('Age between 15-23 years')
+
+        image_url = url_for('uploaded_file', filename=filename) # For the original uploaded image
+        selected_image_url = url_for('uploaded_file', filename=os.path.basename(img)) # For the selected image after processing
+
+        predictions_highCon = predict_image(img, model, height, width) # ภาพที่เลือก
         
-            if predictions_highCon_Gender  >= 0.5: #male
-                gender_ans = "Male"
-            else:
-                gender_ans = "Female"
+        # Access the regression result (output 0)
+        predictions_highCon_Age = predictions_highCon[0][0][0] # [0] บอกว่าดึงจาก layer ไหน [0][0] ถอด[[]]ออก
 
-            # Assuming `background_user_upload_image` is the path to the user uploaded image
-            background_user_upload_image = img
+        age_ans = int(np.around(predictions_highCon_Age)) # array
 
-            # Load the user uploaded image
-            user_uploaded_image = load_img(background_user_upload_image, target_size=(224, 224))
 
-            # Preprocess the image
-            preprocessed_user_uploaded_image = img_to_array(user_uploaded_image) / 255.0
+        # Access the classification result (output 1)
+        predictions_highCon_Gender = predictions_highCon[1][0][0] # Use a threshold to determine the class
+    
+        if predictions_highCon_Gender  >= 0.5: #male
+            gender_ans = "Male"
+        else:
+            gender_ans = "Female"
 
-            # Reshape the image to match the model input shape
-            reshaped_user_uploaded_image = np.expand_dims(preprocessed_user_uploaded_image, axis=0)
-            #explainer15_23_gender explainer15_23_age explainer7_14_gender explainer7_14_age
+        # Assuming `background_user_upload_image` is the path to the user uploaded image
+        background_user_upload_image = img
+
+        # Load the user uploaded image
+        user_uploaded_image = load_img(background_user_upload_image, target_size=(224, 224))
+
+        # Preprocess the image
+        preprocessed_user_uploaded_image = img_to_array(user_uploaded_image) / 255.0
+
+        # Reshape the image to match the model input shape
+        reshaped_user_uploaded_image = np.expand_dims(preprocessed_user_uploaded_image, axis=0)
+        #explainer15_23_gender explainer15_23_age explainer7_14_gender explainer7_14_age
             
-            # Calculate SHAP values
-            shap_values = None
+        # Calculate SHAP values
+        shap_values = None
 
-            if model == model_7_14:
-                if prediction_class == 2:
+        if model == model_7_14:
+            if prediction_class == 2:
 
-                    shap_values = explainer7_14_gender.shap_values(reshaped_user_uploaded_image)
-                elif prediction_class == 3:
-                    shap_values = explainer7_14_age.shap_values(reshaped_user_uploaded_image)
+                shap_values = explainer7_14_gender.shap_values(reshaped_user_uploaded_image)
+            elif prediction_class == 3:
+                shap_values = explainer7_14_age.shap_values(reshaped_user_uploaded_image)
 
-            if model == model_15_23:
-                if prediction_class == 2:
-                    shap_values = explainer15_23_gender.shap_values(reshaped_user_uploaded_image)
-                elif prediction_class == 3:
-                    shap_values = explainer15_23_age.shap_values(reshaped_user_uploaded_image)
+        if model == model_15_23:
+            if prediction_class == 2:
+                shap_values = explainer15_23_gender.shap_values(reshaped_user_uploaded_image)
+            elif prediction_class == 3:
+                shap_values = explainer15_23_age.shap_values(reshaped_user_uploaded_image)
 
    
-            if prediction_class in [0, 1]:
-                print("No need to calculate SHAP values for class 0 or 1")
-        
-            else:
-                # Perform the processing as before
-                data = [np.array(shap_values)]
-                image_array = data[0]
-                positive = np.where(image_array >= 0, image_array, 0)
-                negative = np.where(image_array < 0, image_array, 0)
-                negative_aps = np.abs(negative) 
+        if prediction_class in [0, 1]:
+            print("No need to calculate SHAP values for class 0 or 1")
+    
+        else:
+            # Perform the processing as before
+            data = [np.array(shap_values)]
+            image_array = data[0]
+            positive = np.where(image_array >= 0, image_array, 0)
+            negative = np.where(image_array < 0, image_array, 0)
+            negative_aps = np.abs(negative) 
 
-                flattened_array_pos = positive.flatten()
-                flattened_array_neg = negative_aps.flatten()
+            flattened_array_pos = positive.flatten()
+            flattened_array_neg = negative_aps.flatten()
 
-                normalized_array_pos = (flattened_array_pos - np.min(flattened_array_pos)) / (np.max(flattened_array_pos) - np.min(flattened_array_pos))
-                normalized_array_neg = (flattened_array_neg - np.min(flattened_array_neg)) / (np.max(flattened_array_neg) - np.min(flattened_array_neg))
+            normalized_array_pos = (flattened_array_pos - np.min(flattened_array_pos)) / (np.max(flattened_array_pos) - np.min(flattened_array_pos))
+            normalized_array_neg = (flattened_array_neg - np.min(flattened_array_neg)) / (np.max(flattened_array_neg) - np.min(flattened_array_neg))
 
-                normalized_positive = normalized_array_pos.reshape(positive.shape)
-                normalized_neg = normalized_array_neg.reshape(negative_aps.shape)
+            normalized_positive = normalized_array_pos.reshape(positive.shape)
+            normalized_neg = normalized_array_neg.reshape(negative_aps.shape)
 
-                grayscale_image_pos = normalized_positive / 3.0
-                grayscale_image_neg = normalized_neg / 3.0
-                print(grayscale_image_pos.shape)
-                grayscale_image_positive = np.mean(grayscale_image_pos, axis=-1)
-                grayscale_image_negative = np.mean(grayscale_image_neg, axis=-1)
-                print(grayscale_image_positive.shape)
+            grayscale_image_pos = normalized_positive / 3.0
+            grayscale_image_neg = normalized_neg / 3.0
+            print(grayscale_image_pos.shape)
+            grayscale_image_positive = np.mean(grayscale_image_pos, axis=-1)
+            grayscale_image_negative = np.mean(grayscale_image_neg, axis=-1)
+            print(grayscale_image_positive.shape)
 
-                grayscale_image_p = grayscale_image_positive.squeeze()
-                grayscale_image_n = grayscale_image_negative.squeeze()
+            grayscale_image_p = grayscale_image_positive.squeeze()
+            grayscale_image_n = grayscale_image_negative.squeeze()
 
-                percentile_95_pos = np.percentile(grayscale_image_p, 95)
-                percentile_95_neg = np.percentile(grayscale_image_n, 95)
+            percentile_95_pos = np.percentile(grayscale_image_p, 95)
+            percentile_95_neg = np.percentile(grayscale_image_n, 95)
 
-                grayscale_pos_thresholded = grayscale_image_p
-                grayscale_neg_thresholded = grayscale_image_n
+            grayscale_pos_thresholded = grayscale_image_p
+            grayscale_neg_thresholded = grayscale_image_n
 
-                grayscale_pos_thresholded[grayscale_pos_thresholded < percentile_95_pos] = 0
-                grayscale_neg_thresholded[grayscale_neg_thresholded < percentile_95_neg] = 0
-
-
-                df_yolo_results = detect_image(img)  # Make sure 'detect' returns a DataFrame with YOLO detection results
-
-                output_path_pos = os.path.join(app.config['UPLOAD_FOLDER'], 'output_pos.png')
-                output_path_neg = os.path.join(app.config['UPLOAD_FOLDER'], 'output_neg.png')
-
-                # Assuming grayscale_pos_thresholded and grayscale_neg_thresholded are defined and ready to use
-                selected_bboxes_pos = plot_bboxes_on_image_pos(img, df_yolo_results, grayscale_pos_thresholded, output_path_pos)
-                selected_bboxes_neg = plot_bboxes_on_image_neg(img, df_yolo_results, grayscale_neg_thresholded, output_path_neg)
-                # Convert server paths to web-accessible URLs
-                output_url_pos = url_for('uploaded_file', filename='output_pos.png')
-                output_url_neg = url_for('uploaded_file', filename='output_neg.png')
-
-                # Depending on the prediction, generate an answer and choose the correct template and parameters
-                if prediction_class == 0 or prediction_class == 1:
-                    gender_or_age = gender_ans if prediction_class == 0 else age_ans
-                    answer = get_auto_lang_answer(prediction_class, gender=gender_or_age, selected_bboxes_pos=selected_bboxes_pos, selected_bboxes_neg=selected_bboxes_neg, question=question)
-                    return render_template('predict2.html', image_url=image_url, question=question, answer=answer)
-
-                elif prediction_class == 2:
-                    # Assuming 'predictions_highCon_Gender' is defined
-                    selected_bboxes = selected_bboxes_pos if predictions_highCon_Gender >= 0.5 else selected_bboxes_neg
-                    output_url = output_url_pos if predictions_highCon_Gender >= 0.5 else output_url_neg
-                    answer = get_auto_lang_answer(prediction_class, gender=gender_ans, selected_bboxes_pos=selected_bboxes, question=question)
-                    return render_template('predict.html', image_url=image_url, question=question, answer=answer, output_url=output_url)
-
-                elif prediction_class == 3:
-                    # Assuming 'age_ans' is defined
-                    output_url = output_url_neg if age_ans <= 14 else output_url_pos
-                    answer = get_auto_lang_answer(prediction_class, age=age_ans, selected_bboxes_pos=selected_bboxes_pos, question=question)
-                    return render_template('predict.html', image_url=image_url, question=question, answer=answer, output_url=output_url)
+            grayscale_pos_thresholded[grayscale_pos_thresholded < percentile_95_pos] = 0
+            grayscale_neg_thresholded[grayscale_neg_thresholded < percentile_95_neg] = 0
 
 
-                elif prediction_class == 4:
-                # Correctly call `get_auto_lang_answer` and assign its return value to `answer`
-                    answer = get_auto_lang_answer(prediction_class, question=question)
-                # Use the `answer` variable in the call to `render_template`
-                    return render_template('predict3.html', image_url=image_url, question=question, answer=answer)
+            df_yolo_results = detect_image(img)  # Make sure 'detect' returns a DataFrame with YOLO detection results
+
+            output_path_pos = os.path.join(app.config['UPLOAD_FOLDER'], 'output_pos.png')
+            output_path_neg = os.path.join(app.config['UPLOAD_FOLDER'], 'output_neg.png')
+
+            # Assuming grayscale_pos_thresholded and grayscale_neg_thresholded are defined and ready to use
+            selected_bboxes_pos = plot_bboxes_on_image_pos(img, df_yolo_results, grayscale_pos_thresholded, output_path_pos)
+            selected_bboxes_neg = plot_bboxes_on_image_neg(img, df_yolo_results, grayscale_neg_thresholded, output_path_neg)
+            # Convert server paths to web-accessible URLs
+            output_url_pos = url_for('uploaded_file', filename='output_pos.png')
+            output_url_neg = url_for('uploaded_file', filename='output_neg.png')
+
+        # Depending on the prediction, generate an answer and choose the correct template and parameters
+        if prediction_class == 0 or prediction_class == 1:
+            gender_or_age = gender_ans if prediction_class == 0 else age_ans
+            answer = get_auto_lang_answer(prediction_class, gender=gender_or_age, selected_bboxes_pos=selected_bboxes_pos, selected_bboxes_neg=selected_bboxes_neg, question=question)
+            return render_template('predict2.html', image_url=image_url, question=question, answer=answer)
+
+        elif prediction_class == 2:
+            # Assuming 'predictions_highCon_Gender' is defined
+            selected_bboxes = selected_bboxes_pos if predictions_highCon_Gender >= 0.5 else selected_bboxes_neg
+            output_url = output_url_pos if predictions_highCon_Gender >= 0.5 else output_url_neg
+            answer = get_auto_lang_answer(prediction_class, gender=gender_ans, selected_bboxes_pos=selected_bboxes, question=question)
+            return render_template('predict.html', image_url=image_url, question=question, answer=answer, output_url=output_url)
+
+        elif prediction_class == 3:
+            # Assuming 'age_ans' is defined
+            output_url = output_url_neg if age_ans <= 14 else output_url_pos
+            answer = get_auto_lang_answer(prediction_class, age=age_ans, selected_bboxes_pos=selected_bboxes_pos, question=question)
+            return render_template('predict.html', image_url=image_url, question=question, answer=answer, output_url=output_url)
+
+
+        elif prediction_class == 4:
+        # Correctly call `get_auto_lang_answer` and assign its return value to `answer`
+            answer = get_auto_lang_answer(prediction_class, question=question)
+        # Use the `answer` variable in the call to `render_template`
+            return render_template('predict3.html', image_url=image_url, question=question, answer=answer)
 
 
                            

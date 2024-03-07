@@ -542,10 +542,20 @@ def predict():
 
         # Reshape the image to match the model input shape
         reshaped_user_uploaded_image = np.expand_dims(preprocessed_user_uploaded_image, axis=0)
-
+        #explainer15_23_gender explainer15_23_age explainer7_14_gender explainer7_14_age
         # Calculate SHAP values
-        shap_values = explainer15_23_gender.shap_values(reshaped_user_uploaded_image)
+        if model == model_7_14 and prediction_class == 2:
+            shap_values = explainer7_14_gender.shap_values(reshaped_user_uploaded_image)
     
+        if model == model_7_14 and prediction_class == 3:
+            shap_values = explainer7_14_age.shap_values(reshaped_user_uploaded_image)
+
+        if model == model_7_14 and prediction_class == 2:
+            shap_values = explainer15_23_gender.shap_values(reshaped_user_uploaded_image)
+
+        if model == model_7_14 and prediction_class == 3:
+            shap_values = explainer15_23_age.shap_values(reshaped_user_uploaded_image)
+
         shap_values_1 = np.array(shap_values)
 
         # Perform the processing as before

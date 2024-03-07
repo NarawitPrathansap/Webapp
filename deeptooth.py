@@ -559,7 +559,7 @@ def predict():
             elif prediction_class == 3:
                 shap_values = explainer15_23_age.shap_values(reshaped_user_uploaded_image)
 
-        shap_values_1 = np.array(shap_values)
+   
 
         # Perform the processing as before
         image_array = np.array(shap_values[0])

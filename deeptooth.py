@@ -565,7 +565,7 @@ def predict():
         image_array = np.array(shap_values[0])
         positive = np.where(image_array >= 0, image_array, 0)
         negative = np.where(image_array < 0, image_array, 0)
-        negative_aps = np.abs(negative)
+        negative_aps = np.abs(negative) 
 
         flattened_array_pos = positive.flatten()
         flattened_array_neg = negative_aps.flatten()

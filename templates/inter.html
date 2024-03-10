@@ -3,126 +3,141 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DENTAI - Image Prediction App</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <title>DENTAI</title>
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+        *{
             margin: 0;
             padding: 0;
-            background-color: #f0f0f0;
-            color: #333;
-            line-height: 1.6;
-        }
-        .container {
-            max-width: 960px;
-            margin: auto;
-            padding: 0 20px;
-        }
-        .header, .footer {
-            text-align: center;
-            padding: 20px 0;
-        }
-        .logo {
-            max-width: 100px;
-            border-radius: 50%;
-        }
-        @media (max-width: 768px) {
-            .header h1, .footer p {
-                font-size: 18px;
-            }
-            .logo {
-                max-width: 80px;
-            }
-        }
-        :focus {
-            outline: 3px solid #ffbf47;
-        }
-        a:hover, a:focus {
-            text-decoration: underline;
-        }
-        input[type="text"], input[type="file"] {
-            width: 100%;
-            padding: 12px;
-            margin: 8px 0;
-            display: inline-block;
-            border: 1px solid #ccc;
-            border-radius: 4px;
             box-sizing: border-box;
+            font-family: "Poppins", sans-serif;
         }
-        .btn-container {
+        body {
+        
             display: flex;
-            justify-content: flex-end;
+            flex-direction: column;
+            align-items: center;
+            font-family: Arial, sans-serif;
         }
-        .btn {
-            background-color: #4CAF50;
-            color: white;
-            padding: 14px 20px;
-            margin: 8px 0;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
+        #logo {
+            align-self: flex-start;
+            width: 100px; /* Adjusted width */
+            height: auto; /* Maintains aspect ratio */
         }
-        .btn:hover {
-            background-color: #45a049;
+        #title {
+            margin: 20px 0;
+            font-size: 64px; /* Increased font size */
+            font-weight: bold;
         }
-        #image-preview-container {
+        #upload-container {
             display: flex;
+            gap: 40px;
+            margin-bottom: 10px;
+        }
+        #upload-area, #question-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             justify-content: center;
-            margin-top: 20px;
+            text-align: center;
         }
-        #image-preview {
-            max-width: 40%;
-            height: auto;
+        #upload-area {
+            border: 2px dashed #000;
+            padding: 40px;
+            width: 470px;
+            height: 300px; /* Adjusted height */
+            border-radius: 20px;
+            justify-content: center; /* Ensures content is centered */
+        }
+
+
+        #question-area {
+            border: 1px solid #000;
+            padding: 20px; /* Adjust padding if needed */
+            width: 500px;
+            height: 300px; /* Adjusted height */
+            display: flex;
+            flex-direction: column;
+            justify-content: start; /* Aligns content to the top */
+        }
+        #question-input {
+            width: 100%;
+            height: 200px;
+            resize: none;
+            padding: 0px;
+            border: none; /* Removes the border */
+            outline: none; /* Removes the outline on focus */
+            background-color: transparent; /* Makes the background transparent */
+            text-align: left;
+        }
+        #upload-button {
+            cursor: pointer;
+            padding: 10px 20px;
+            margin-top: 20px; /* Increase the space above the button */
+        }
+        .upload-icon {
+            width: 80px; /* Adjust width as needed */
+            height: 80px; /* Adjust height as needed */
+            margin-right: 8px; /* Adjust spacing as needed */
+            vertical-align: middle; /* Aligns icon with text */
+        }
+        #header {
+            display: flex;
+            align-items: center;
+            justify-content: center; /* This will move the title to the right */
+            width: 100%;
+            
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header class="header">
-            <img src="https://raw.githubusercontent.com/NarawitPrathansap/AIPrototype2023/main/templates/logo_app.jpg" alt="DENTAI Logo" class="logo">
-            <h1>DENTAI</h1>
-        </header>
-
-        <div class="form-container">
-            <form action="/predict" method="post" enctype="multipart/form-data">
-                <input id="file-upload" type="file" name="image" onchange="previewImage();" required style="display: none;">
-                <label for="file-upload" class="btn file-upload-label"><i class="fas fa-cloud-upload-alt"></i> Upload panoramic radiographs</label>
+    <div id="header">
+        <img id="logo" src="https://raw.githubusercontent.com/NarawitPrathansap/AIPrototype2023/main/templates/logo_app.jpg" alt="DENTAI Logo" />
+        <div id="title">DENTAI</div>
+    </div>
+    <form action="/predict" method="post" enctype="multipart/form-data">
+        <div id="upload-container">
+            <div id="upload-area">
+                <img src="https://raw.githubusercontent.com/NarawitPrathansap/Webapp/main/templates/upload-image-icon.svg" alt="Upload" class="upload-icon"/>
+                Drag and Drop a file here or
+                <label for="image-upload" style="cursor: pointer;">Click here to upload image</label>
+                <input type="file" id="image-upload" style="display: none;" name="image" required>
+                <div id="file-name"></div>
                 <div id="image-preview-container" style="display: none;">
                     <img id="image-preview" alt="Image preview" />
                 </div>
-                <input type="text" name="question" placeholder="Enter your question (e.g. Based on the dental X-ray provided, can you determine the gender of the individual?)" required><br>
-                <div class="btn-container">
-                    <input type="submit" class="btn" value="Submit">
-                </div>
-            </form>
+            </div>
+    
+            <div id="question-area">
+                <textarea id="question-input" name="question" placeholder="Type your question here (e.g. Based on the dental X-ray provided, can you determine the gender of the individual?)" required></textarea>
+            </div>
         </div>
+        <button type="submit" id="upload-button" value="Submit">Upload now</button>
+    </form>
 
-        <section id="age-gender-estimation" style="text-align: center; margin-top: 20px;">
-            <h4>Application for estimation age and gender</h4>
-            <p>For more information, visit our <a href="https://nattntn.github.io/Interpretable_Deep_Neural_Networks_for_Age_and_Gender_Estimation_via_Panoramic_Radiographs/#" target="_blank" rel="noopener noreferrer">DentAI webpage</a>.</p>
-        </section>
-        
-        <footer class="footer">
-            <p>&copy; 2024 DENTAI. All rights reserved.</p>
-        </footer>
-    </div>
 
     <script>
-        function previewImage() {
-            const file = document.getElementById('file-upload').files[0];
-            const preview = document.getElementById('image-preview');
-            const previewContainer = document.getElementById('image-preview-container');
+        // JavaScript to handle the image upload and display
+        document.getElementById('image-upload').addEventListener('change', function(event) {
+            const fileInfo = event.target.files[0];
+            if(fileInfo) {
+                // Display the file name
+                document.getElementById('file-name').textContent = `File name: ${fileInfo.name}`;
 
-            if (file) {
+                // Display image preview inside the upload box
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    preview.src = e.target.result;
-                    previewContainer.style.display = 'flex'; // Changed from 'block' to 'flex' to center the image
+                    const uploadArea = document.getElementById('upload-area');
+                    uploadArea.innerHTML = ''; // Clear the upload area
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.style.width = '100%'; // Set width to fill the upload area
+                    img.style.height = '100%'; // Set height to fill the upload area
+                    uploadArea.appendChild(img);
                 };
-                reader.readAsDataURL(file);
+                reader.readAsDataURL(fileInfo);
             }
-        }
+        });
     </script>
 </body>
 </html>

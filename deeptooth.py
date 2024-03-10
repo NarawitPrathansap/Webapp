@@ -79,6 +79,7 @@ def uploaded_file(filename):
 @app.route('/')
 def index():
     return render_template('inter.html')
+
 def process_input(images_directory):
     background_data = []
     image_paths = [os.path.join(images_directory, f) for f in os.listdir(images_directory) if os.path.isfile(os.path.join(images_directory, f))]
@@ -340,7 +341,7 @@ def predict():
             print('No file part')
             return redirect(request.url)
         image = request.files['image']
-        question = request.form('question', '')
+        question = request.form.get('question', '')
         if image.filename == '':
             print('No selected file')
             return redirect(request.url)

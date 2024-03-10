@@ -20,7 +20,7 @@ from langdetect import detect
 import sys
 import json
 from joblib import load
-from transformers import BertTokenizer, BertModel
+from transformers import BertTokenizer, TFBertModel
 
 
 
@@ -42,7 +42,7 @@ model_15_23 = load_model('../Webapp/templates/25_Multi_1e-6_500_Unfreeze.h5')
 # Load your models outside of the request to save loading time
 random_forest_model = load('../Webapp/templates/random_forest.joblib')  # Adjust path as needed
 tokenizer = BertTokenizer.from_pretrained('bert-base-multilingual-cased')
-bert_model = BertModel.from_pretrained('bert-base-multilingual-cased')
+bert_model = TFBertModel.from_pretrained('bert-base-multilingual-cased')
 
 
 
@@ -78,7 +78,7 @@ def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('inter.html')
 def process_input(images_directory):
     background_data = []
     image_paths = [os.path.join(images_directory, f) for f in os.listdir(images_directory) if os.path.isfile(os.path.join(images_directory, f))]
@@ -307,8 +307,8 @@ def get_auto_lang_answer(prediction_class, gender=None, age=None, selected_bboxe
     return answer
 
 def classify_question(text, tokenizer, bert_model, random_forest_model):
-    inputs = tokenizer(text, return_tensors="pt", max_length=512, truncation=True, padding='max_length')
-    output = bert_model(**inputs)
+    inputs = tokenizer(text, return_tensors="tf", max_length=512, truncation=True, padding='max_length')
+    output = bert_model(inputs)
     last_hidden_states = output.last_hidden_state
     cls_embeddings = last_hidden_states[:, 0, :].detach().numpy()
     predictions = random_forest_model.predict(cls_embeddings)

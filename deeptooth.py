@@ -332,7 +332,7 @@ explainer7_14_gender = shap.GradientExplainer(model7_14_gender, background_train
 explainer15_23_age = shap.GradientExplainer(model15_23_age, background_train_np)
 explainer15_23_gender = shap.GradientExplainer(model15_23_gender, background_train_np)
 
-@app.route('/predict', methods=['POST'])
+@app.route('/predict', methods=['GET', 'POST'])
 def predict():
     img_paths = []  # Initialize img_paths at the beginning to ensure it's always defined
     if request.method == 'POST':
@@ -340,7 +340,7 @@ def predict():
             print('No file part')
             return redirect(request.url)
         image = request.files['image']
-        question = request.form.get('question', '')
+        question = request.form('question', '')
         if image.filename == '':
             print('No selected file')
             return redirect(request.url)

@@ -311,7 +311,7 @@ def classify_question(text, tokenizer, bert_model, random_forest_model):
     inputs = tokenizer(text, return_tensors="tf", max_length=512, truncation=True, padding='max_length')
     output = bert_model(inputs)
     last_hidden_states = output.last_hidden_state
-    cls_embeddings = last_hidden_states[:, 0, :].detach().numpy()
+    cls_embeddings = last_hidden_states[:, 0, :].numpy()
     predictions = random_forest_model.predict(cls_embeddings)
     return predictions[0]
 

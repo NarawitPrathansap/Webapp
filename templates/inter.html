@@ -49,6 +49,8 @@
             border-radius: 20px;
             justify-content: center; /* Ensures content is centered */
         }
+
+
         #question-area {
             border: 1px solid #000;
             padding: 20px; /* Adjust padding if needed */
@@ -66,7 +68,7 @@
             border: none; /* Removes the border */
             outline: none; /* Removes the outline on focus */
             background-color: transparent; /* Makes the background transparent */
-            text-align: left;
+            text-align: justify;
         }
         #upload-button {
             cursor: pointer;
@@ -84,7 +86,11 @@
             align-items: center;
             justify-content: center; /* This will move the title to the right */
             width: 100%;
-            
+        }
+        #image-preview-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -97,45 +103,58 @@
         <div id="upload-container">
             <div id="upload-area">
                 <img src="https://raw.githubusercontent.com/NarawitPrathansap/Webapp/main/templates/upload-image-icon.svg" alt="Upload" class="upload-icon"/>
-                Drag and Drop a file here or
+                
                 <label for="image-upload" style="cursor: pointer;">Click here to upload image</label>
-                <input type="file" name="image" id="image-upload" style="display: none;"  required>
+                <input type="file" id="image-upload" style="display: none;" name="image" required>
                 <div id="file-name"></div>
                 <div id="image-preview-container" style="display: none;">
                     <img id="image-preview" alt="Image preview" />
                 </div>
+                
             </div>
     
             <div id="question-area">
-                <textarea id="question-input" name="question" placeholder="Type your question here (e.g. Based on the dental X-ray provided, can you determine the gender of the individual?)" required></textarea>
+                <input id="question-input" type="text" name="question" placeholder="Type your question here..." title="Type your question here (e.g., Based on the dental X-ray provided, can you determine the gender of the individual?)" required>
             </div>
         </div>
-        <button type="submit" id="upload-button" value="Submit">Upload now</button>
+                    <input type="submit" id="upload-button" value="Submit"></button>
     </form>
 
 
-    <script>
-        // JavaScript to handle the image upload and display
-        document.getElementById('image-upload').addEventListener('change', function(event) {
-            const fileInfo = event.target.files[0];
-            if(fileInfo) {
-                // Display the file name
-                document.getElementById('file-name').textContent = `File name: ${fileInfo.name}`;
+<script>
+    document.getElementById('image-upload').addEventListener('change', function(event) {
+        const fileInfo = event.target.files[0];
+        if (fileInfo) {
+            // Display the file name
+            document.getElementById('file-name').textContent = `File name: ${fileInfo.name}`;
 
-                // Display image preview inside the upload box
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const uploadArea = document.getElementById('upload-area');
-                    uploadArea.innerHTML = ''; // Clear the upload area
-                    const img = document.createElement('img');
-                    img.src = e.target.result;
-                    img.style.width = '100%'; // Set width to fill the upload area
-                    img.style.height = '100%'; // Set height to fill the upload area
-                    uploadArea.appendChild(img);
-                };
-                reader.readAsDataURL(fileInfo);
-            }
-        });
+            // Hide the drag and drop or click to upload message
+            document.getElementById('upload-area').querySelector('.upload-icon').style.display = 'none'; // Hides the upload icon
+            const uploadInstructions = document.getElementById('upload-area').querySelectorAll('div:not(#file-name), label');
+            uploadInstructions.forEach(element => element.style.display = 'none'); // Hides elements except for the file name display
+
+            // Prepare to display the image preview
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                // Ensure the preview container is visible
+                const previewContainer = document.getElementById('image-preview-container');
+                previewContainer.style.display = 'block';
+
+                // Clear previous images if any, to replace them with the new one
+                previewContainer.innerHTML = '';
+
+                // Create and append the image element for preview
+                const img = document.createElement('img');
+                img.setAttribute('id', 'image-preview'); // Assign an ID to the image for styling or further manipulation
+                img.src = e.target.result;
+                img.style.width = '100%'; // Adjust width as needed
+                img.style.height = 'auto'; // Maintain aspect ratio
+                previewContainer.appendChild(img);
+            };
+            reader.readAsDataURL(fileInfo);
+        }
+    });
+
     </script>
 </body>
 </html>

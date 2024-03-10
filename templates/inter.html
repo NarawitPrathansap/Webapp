@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DENTAI - Image Prediction App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 960px;
+            margin: auto;
+            padding: 0 20px;
+        }
+        .header, .footer {
+            text-align: center;
+            padding: 20px 0;
+        }
+        .logo {
+            max-width: 100px;
+            border-radius: 50%;
+        }
+        @media (max-width: 768px) {
+            .header h1, .footer p {
+                font-size: 18px;
+            }
+            .logo {
+                max-width: 80px;
+            }
+        }
+        :focus {
+            outline: 3px solid #ffbf47;
+        }
+        a:hover, a:focus {
+            text-decoration: underline;
+        }
+        input[type="text"], input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            display: inline-block;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .btn-container {
+            display: flex;
+            justify-content: flex-end;
+        }
+        .btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 14px 20px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+        #image-preview-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        #image-preview {
+            max-width: 40%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <img src="https://raw.githubusercontent.com/NarawitPrathansap/AIPrototype2023/main/templates/logo_app.jpg" alt="DENTAI Logo" class="logo">
+            <h1>DENTAI</h1>
+        </header>
+
+        <div class="form-container">
+            <form action="/predict" method="post" enctype="multipart/form-data">
+                <input id="file-upload" type="file" name="image" onchange="previewImage();" required style="display: none;">
+                <label for="file-upload" class="btn file-upload-label"><i class="fas fa-cloud-upload-alt"></i> Upload panoramic radiographs</label>
+                <div id="image-preview-container" style="display: none;">
+                    <img id="image-preview" alt="Image preview" />
+                </div>
+                <input type="text" name="question" placeholder="Enter your question (e.g. Based on the dental X-ray provided, can you determine the gender of the individual?)" required><br>
+                <div class="btn-container">
+                    <input type="submit" class="btn" value="Submit">
+                </div>
+            </form>
+        </div>
+
+        <section id="age-gender-estimation" style="text-align: center; margin-top: 20px;">
+            <h4>Application for estimation age and gender</h4>
+            <p>For more information, visit our <a href="https://nattntn.github.io/Interpretable_Deep_Neural_Networks_for_Age_and_Gender_Estimation_via_Panoramic_Radiographs/#" target="_blank" rel="noopener noreferrer">DentAI webpage</a>.</p>
+        </section>
+        
+        <footer class="footer">
+            <p>&copy; 2024 DENTAI. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script>
+        function previewImage() {
+            const file = document.getElementById('file-upload').files[0];
+            const preview = document.getElementById('image-preview');
+            const previewContainer = document.getElementById('image-preview-container');
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    previewContainer.style.display = 'flex'; // Changed from 'block' to 'flex' to center the image
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
+</body>
+</html>

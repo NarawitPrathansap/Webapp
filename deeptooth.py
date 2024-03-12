@@ -280,15 +280,15 @@ def get_auto_lang_answer(prediction_class, gender=None, age=None, selected_bboxe
 
     if selected_bboxes_pos is not None:
         if isinstance(selected_bboxes_pos, pd.DataFrame):
-            tooth_parts_info.extend(selected_bboxes_pos[['class_label', 'name']].values.tolist())
+            tooth_parts_info.extend(selected_bboxes_pos[['class', 'name']].values.tolist())
         elif isinstance(selected_bboxes_pos, list) and all(isinstance(item, dict) for item in selected_bboxes_pos):
-            tooth_parts_info.extend([(item['class_label'], item['name']) for item in selected_bboxes_pos])
+            tooth_parts_info.extend([(item['class'], item['name']) for item in selected_bboxes_pos])
 
     if selected_bboxes_neg is not None:
         if isinstance(selected_bboxes_neg, pd.DataFrame):
-            tooth_parts_info.extend(selected_bboxes_neg[['class_label', 'name']].values.tolist())
+            tooth_parts_info.extend(selected_bboxes_neg[['class', 'name']].values.tolist())
         elif isinstance(selected_bboxes_neg, list) and all(isinstance(item, dict) for item in selected_bboxes_neg):
-            tooth_parts_info.extend([(item['class_label'], item['name']) for item in selected_bboxes_neg])
+            tooth_parts_info.extend([(item['class'], item['name']) for item in selected_bboxes_neg])
 
     tooth_parts_str = ', '.join([f"{label}-{part}" for label, part in tooth_parts_info])
 

@@ -42,7 +42,7 @@ model_15_23 = tf.keras.models.load_model('../Webapp/templates/25_Multi_1e-6_500_
 random_forest_model = load('../Webapp/templates/random_forest.joblib')  # Adjust path as needed
 tokenizer = BertTokenizer.from_pretrained('bert-base-multilingual-cased')
 bert_model = TFBertModel.from_pretrained('bert-base-multilingual-cased')
-
+#a
 
 
 # 7-23

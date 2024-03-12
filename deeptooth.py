@@ -5,7 +5,6 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.applications.efficientnet import preprocess_input
-from tensorflow.keras.models import load_model
 from tensorflow.keras.applications import EfficientNetB0
 import os
 import torch
@@ -35,9 +34,9 @@ get_custom_objects().update({
     'Swish': Swish,
     'DropConnect':DropConnect
 })
-model_7_23 = load_model('../Webapp/templates/26_Multi_1e-6_250_Unfreeze.h5')
-model_7_14 = load_model('../Webapp/templates/36_Multi_1e-5_500_Unfreeze.h5')
-model_15_23 = load_model('../Webapp/templates/25_Multi_1e-6_500_Unfreeze.h5')
+model_7_23 = tf.keras.models.load_model('../Webapp/templates/26_Multi_1e-6_250_Unfreeze.h5')
+model_7_14 = tf.keras.models.load_model('../Webapp/templates/36_Multi_1e-5_500_Unfreeze.h5')
+model_15_23 = tf.keras.models.load_model('../Webapp/templates/25_Multi_1e-6_500_Unfreeze.h5')
 
 # Load your models outside of the request to save loading time
 random_forest_model = load('../Webapp/templates/random_forest.joblib')  # Adjust path as needed

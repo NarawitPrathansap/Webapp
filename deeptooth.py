@@ -151,8 +151,7 @@ def detect_yolo(image_path):
     # Convert NMS-filtered results to JSON and print
     print(df_nms_filtered.to_json(orient="records"))
     return df_nms_filtered
-
-def plot_bboxes_on_image_pos(image_path, df, grayscale_image, output_path,prediction_class):
+def plot_bboxes_on_image_pos(image_path, df, grayscale_image, output_path):
     selected_bboxes = []
     # Load the original image
     img = Image.open(image_path)
@@ -190,13 +189,12 @@ def plot_bboxes_on_image_pos(image_path, df, grayscale_image, output_path,predic
             selected_bboxes.append({'xmin': abs_xmin, 'ymin': abs_ymin,'xmax': abs_xmin + abs_width, 'ymax': abs_ymin + abs_height,
                                     'confidence': confidence, 'class': class_label,'name':class_name})
             # Create a rectangle patch
-            edgecolor = 'aqua' if prediction_class == 2 else 'red'
             rect = patches.Rectangle(
                 (abs_xmin, abs_ymin),
                 abs_width,
                 abs_height,
                 linewidth=2,
-                edgecolor=edgecolor,
+                edgecolor='r',
                 facecolor='none'  # Set facecolor to 'none' for an unfilled rectangle
             )
             # Add the rectangle to the axes
@@ -208,8 +206,7 @@ def plot_bboxes_on_image_pos(image_path, df, grayscale_image, output_path,predic
     plt.savefig(output_path)
     plt.close()
     return selected_bboxes
-
-def plot_bboxes_on_image_neg(image_path, df, grayscale_image, output_path,prediction_class):
+def plot_bboxes_on_image_neg(image_path, df, grayscale_image, output_path):
     selected_bboxes = []
     # Load the original image
     img = Image.open(image_path)
@@ -246,16 +243,13 @@ def plot_bboxes_on_image_neg(image_path, df, grayscale_image, output_path,predic
             # Add bounding box information to the selected_bboxes list
             selected_bboxes.append({'xmin': abs_xmin, 'ymin': abs_ymin,'xmax': abs_xmin + abs_width, 'ymax': abs_ymin + abs_height,
                                     'confidence': confidence, 'class': class_label,'name':class_name})
-            
-
             # Create a rectangle patch
-            edgecolor = 'pink' if prediction_class == 2 else 'yellow'
             rect = patches.Rectangle(
                 (abs_xmin, abs_ymin),
                 abs_width,
                 abs_height,
                 linewidth=2,
-                edgecolor=edgecolor,
+                edgecolor='b',
                 facecolor='none'  # Set facecolor to 'none' for an unfilled rectangle
             )
             # Add the rectangle to the axes
@@ -267,55 +261,51 @@ def plot_bboxes_on_image_neg(image_path, df, grayscale_image, output_path,predic
     plt.savefig(output_path)
     plt.close()
     return selected_bboxes
-
-
-
 def get_auto_lang_answer(prediction_class, gender=None, age=None, selected_bboxes_pos=None, selected_bboxes_neg=None, question=''):
     try:
         detected_lang = detect(question)
         language = 'th' if detected_lang == 'th' else 'en'
     except Exception as e:
-        print(f"Language detection failed: {e}")
-        language = 'en'
-
-    tooth_parts_info = []
-
+        print(f"Language detection failed: {e}")  # Logging the exception
+        language = 'en'  # Default to English if detection fails
+    # Combining tooth parts from both positive and negative bboxes if they exist
+    tooth_parts = []
+    # Check if selected_bboxes_pos is a DataFrame or a list of dictionaries
     if selected_bboxes_pos is not None:
         if isinstance(selected_bboxes_pos, pd.DataFrame):
-            tooth_parts_info.extend(selected_bboxes_pos[['class', 'name']].values.tolist())
+            tooth_parts.extend(selected_bboxes_pos['name'].tolist())
         elif isinstance(selected_bboxes_pos, list) and all(isinstance(item, dict) for item in selected_bboxes_pos):
-            tooth_parts_info.extend([(item['class'], item['name']) for item in selected_bboxes_pos])
-
+            tooth_parts.extend([item['name'] for item in selected_bboxes_pos])
+    # Repeat the check for selected_bboxes_neg
     if selected_bboxes_neg is not None:
         if isinstance(selected_bboxes_neg, pd.DataFrame):
-            tooth_parts_info.extend(selected_bboxes_neg[['class', 'name']].values.tolist())
+            tooth_parts.extend(selected_bboxes_neg['name'].tolist())
         elif isinstance(selected_bboxes_neg, list) and all(isinstance(item, dict) for item in selected_bboxes_neg):
-            tooth_parts_info.extend([(item['class'], item['name']) for item in selected_bboxes_neg])
-
-    tooth_parts_str = ', '.join([f"{label}-{part}" for label, part in tooth_parts_info])
-
+            tooth_parts.extend([item['name'] for item in selected_bboxes_neg])
+    tooth_parts_str = ', '.join(tooth_parts)
+   
+    # Define answers database
     answers_db = {
         "en": {
             0: "The predicted gender from this panoramic image is {gender}.",
             1: "The estimated age of the individual in this panoramic image is {age} years.",
-            2: "Based on the panoramic image, the predicted gender is {gender}, with attention to the parts: {tooth_parts}.",
-            3: "From the panoramic analysis, the estimated age is {age} years, considering the parts: {tooth_parts}.",
+            2: "Based on the panoramic image, the predicted gender is {gender}, with attention to the {tooth_part}.",
+            3: "From the panoramic analysis, the estimated age is {age} years, considering the {tooth_part}.",
             4: "Sorry, no answer available for this question."
         },
         "th": {
-            0: "เพศที่ทำนายได้จากภาพถ่ายรังสีพาโนรามานี้คือ {gender}.",
-            1: "อายุที่ประมาณค่าได้ของบุคคลในภาพถ่ายรังสีพาโนรามานี้ได้คือ {age} ปี.",
-            2: "จากภาพถ่ายรังสีพาโนรามา, เพศที่ทำนายได้คือ {gender}, โดยดูจากบริเวณ {tooth_parts}.",
-            3: "จากการวิเคราะห์ภาพถ่ายรังสีพาโนรามา, อายุที่ประมาณค่าได้คือ {age} ปี, โดยดูจากบริเวณ {tooth_parts}.",
+            0: "เพศที่คาดการณ์ไว้จากภาพถ่ายรังสีพาโนรามานี้คือ {gender}.",
+            1: "อายุที่ประเมินของบุคคลในภาพถ่ายรังสีพาโนรามานี้ได้คือ {age} ปี.",
+            2: "ตามภาพพาโนรามา, เพศที่ทำนายได้คือ {gender}, โดยดูจาก {tooth_part}.",
+            3: "จากการวิเคราะห์ภาพพาโนรามา, อายุที่ประเมินได้คือ {age} ปี, โดยพิจารณาที่ {tooth_part}.",
             4: "ขออภัย, ไม่มีคำตอบสำหรับคำถามนี้."
         }
     }
-
+    # Continue with your existing logic
     answer_template = answers_db[language].get(prediction_class, "")
-    answer = answer_template.format(gender=gender, age=age, tooth_parts=tooth_parts_str)
+    answer = answer_template.format(gender=gender, age=age, tooth_part=tooth_parts_str)
 
     return answer
-
 
 def classify_question(text, tokenizer, bert_model, random_forest_model):
     inputs = tokenizer(text, return_tensors="tf", max_length=512, truncation=True, padding='max_length')
@@ -367,7 +357,7 @@ def predict():
 
             # Call the cut_image.py script as a subprocess
             subprocess.run(['python', 'index.py', image_path, left_image_path, right_image_path])
-            #prediction_class = subprocess.run(['python', 'clf.py', question], capture_output=True, text=True, check=True)
+            prediction_class = subprocess.run(['python', 'clf.py', question], capture_output=True, text=True, check=True)
 
             #prediction_class = subprocess.run(['python', 'clf.py', question], capture_output=True, text=True, check=True)
             prediction_class = classify_question(question, tokenizer, bert_model, random_forest_model)
@@ -488,10 +478,8 @@ def predict():
             # Assuming grayscale_pos_thresholded and grayscale_neg_thresholded are defined and ready to use
             output_path_pos = os.path.join(app.config['UPLOAD_FOLDER'], 'output_pos.png')
             output_path_neg = os.path.join(app.config['UPLOAD_FOLDER'], 'output_neg.png')
-
-            selected_bboxes_pos = plot_bboxes_on_image_pos(img, df_yolo_results, grayscale_pos_thresholded, output_path_pos,prediction_class)
-            selected_bboxes_neg = plot_bboxes_on_image_neg(img, df_yolo_results, grayscale_neg_thresholded, output_path_neg,prediction_class)
-   
+            selected_bboxes_pos = plot_bboxes_on_image_pos(img, df_yolo_results, grayscale_pos_thresholded, output_path_pos)
+            selected_bboxes_neg = plot_bboxes_on_image_neg(img, df_yolo_results, grayscale_neg_thresholded, output_path_neg)
             # Convert server paths to web-accessible URLs
             output_url_pos = url_for('uploaded_file', filename='output_pos.png')
             output_url_neg = url_for('uploaded_file', filename='output_neg.png')
@@ -501,7 +489,7 @@ def predict():
         answer = get_auto_lang_answer(prediction_class, gender=gender_or_age, question=question)
         return render_template('predict2.html', image_url=image_url, question=question, answer=answer)
     elif prediction_class == 2:
-        
+        # Assuming 'predictions_highCon_Gender' is defined
         selected_bboxes = selected_bboxes_pos if predictions_highCon_Gender >= 0.5 else selected_bboxes_neg
         output_url = output_url_pos if predictions_highCon_Gender >= 0.5 else output_url_neg
         answer = get_auto_lang_answer(prediction_class, gender=gender_ans, selected_bboxes_pos=selected_bboxes, question=question)

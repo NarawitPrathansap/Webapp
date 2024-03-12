@@ -152,7 +152,7 @@ def detect_yolo(image_path):
     print(df_nms_filtered.to_json(orient="records"))
     return df_nms_filtered
 
-def plot_bboxes_on_image_pos(image_path, df, grayscale_image, output_path):
+def plot_bboxes_on_image_pos(image_path, df, grayscale_image, output_path,prediction_class):
     selected_bboxes = []
     # Load the original image
     img = Image.open(image_path)
@@ -190,12 +190,13 @@ def plot_bboxes_on_image_pos(image_path, df, grayscale_image, output_path):
             selected_bboxes.append({'xmin': abs_xmin, 'ymin': abs_ymin,'xmax': abs_xmin + abs_width, 'ymax': abs_ymin + abs_height,
                                     'confidence': confidence, 'class': class_label,'name':class_name})
             # Create a rectangle patch
+            edgecolor = 'aqua' if prediction_class == 2 else 'red'
             rect = patches.Rectangle(
                 (abs_xmin, abs_ymin),
                 abs_width,
                 abs_height,
                 linewidth=2,
-                edgecolor='darkgreen',
+                edgecolor=edgecolor,
                 facecolor='none'  # Set facecolor to 'none' for an unfilled rectangle
             )
             # Add the rectangle to the axes
@@ -208,7 +209,7 @@ def plot_bboxes_on_image_pos(image_path, df, grayscale_image, output_path):
     plt.close()
     return selected_bboxes
 
-def plot_bboxes_on_image_neg(image_path, df, grayscale_image, output_path):
+def plot_bboxes_on_image_neg(image_path, df, grayscale_image, output_path,prediction_class):
     selected_bboxes = []
     # Load the original image
     img = Image.open(image_path)
@@ -248,12 +249,13 @@ def plot_bboxes_on_image_neg(image_path, df, grayscale_image, output_path):
             
 
             # Create a rectangle patch
+            edgecolor = 'pink' if prediction_class == 2 else 'yellow'
             rect = patches.Rectangle(
                 (abs_xmin, abs_ymin),
                 abs_width,
                 abs_height,
                 linewidth=2,
-                edgecolor='pink',
+                edgecolor=edgecolor,
                 facecolor='none'  # Set facecolor to 'none' for an unfilled rectangle
             )
             # Add the rectangle to the axes
@@ -487,8 +489,8 @@ def predict():
             output_path_pos = os.path.join(app.config['UPLOAD_FOLDER'], 'output_pos.png')
             output_path_neg = os.path.join(app.config['UPLOAD_FOLDER'], 'output_neg.png')
 
-            selected_bboxes_pos = plot_bboxes_on_image_pos(img, df_yolo_results, grayscale_pos_thresholded, output_path_pos)
-            selected_bboxes_neg = plot_bboxes_on_image_neg(img, df_yolo_results, grayscale_neg_thresholded, output_path_neg)
+            selected_bboxes_pos = plot_bboxes_on_image_pos(img, df_yolo_results, grayscale_pos_thresholded, output_path_pos,prediction_class)
+            selected_bboxes_neg = plot_bboxes_on_image_neg(img, df_yolo_results, grayscale_neg_thresholded, output_path_neg,prediction_class)
    
             # Convert server paths to web-accessible URLs
             output_url_pos = url_for('uploaded_file', filename='output_pos.png')

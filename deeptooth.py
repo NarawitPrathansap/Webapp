@@ -4,7 +4,9 @@ from PIL import Image
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.preprocessing import image
+from tensorflow.keras.applications.efficientnet import preprocess_input
 from tensorflow.keras.models import load_model
+from tensorflow.keras.applications import EfficientNetB0
 import os
 import torch
 import subprocess
@@ -33,8 +35,6 @@ get_custom_objects().update({
     'Swish': Swish,
     'DropConnect':DropConnect
 })
-
-# Load models 
 model_7_23 = load_model('../Webapp/templates/26_Multi_1e-6_250_Unfreeze.h5')
 model_7_14 = load_model('../Webapp/templates/36_Multi_1e-5_500_Unfreeze.h5')
 model_15_23 = load_model('../Webapp/templates/25_Multi_1e-6_500_Unfreeze.h5')
@@ -130,8 +130,8 @@ def nms_per_class(df, iou_threshold=0.5):
             for j in range(i+1, len(df_class_sorted)):
                 if j in suppressed_indices:
                     continue
-                boxA = df_class_sorted.iloc[i][['xmin', 'ymin', 'xmax', 'ymax']]
-                boxB = df_class_sorted.iloc[j][['xmin', 'ymin', 'xmax', 'ymax']]
+                boxA = df_class_sorted.iloc[i][['xmin', 'ymin', 'xmax', 'ymax']].values
+                boxB = df_class_sorted.iloc[j][['xmin', 'ymin', 'xmax', 'ymax']].values
                 if compute_iou(boxA, boxB) > iou_threshold:
                     suppressed_indices.add(j)
         # Filter out suppressed detections
@@ -151,7 +151,7 @@ def detect_yolo(image_path):
     # Convert NMS-filtered results to JSON and print
     print(df_nms_filtered.to_json(orient="records"))
     return df_nms_filtered
-def plot_bboxes_on_image_pos(image_path, df, grayscale_image, output_path):
+def plot_bboxes_on_image_pos_male(image_path, df, grayscale_image, output_path):
     selected_bboxes = []
     # Load the original image
     img = Image.open(image_path)
@@ -194,7 +194,7 @@ def plot_bboxes_on_image_pos(image_path, df, grayscale_image, output_path):
                 abs_width,
                 abs_height,
                 linewidth=2,
-                edgecolor='r',
+                edgecolor='b',
                 facecolor='none'  # Set facecolor to 'none' for an unfilled rectangle
             )
             # Add the rectangle to the axes
@@ -206,7 +206,63 @@ def plot_bboxes_on_image_pos(image_path, df, grayscale_image, output_path):
     plt.savefig(output_path)
     plt.close()
     return selected_bboxes
-def plot_bboxes_on_image_neg(image_path, df, grayscale_image, output_path):
+def plot_bboxes_on_image_pos_adult(image_path, df, grayscale_image, output_path):
+    selected_bboxes = []
+    # Load the original image
+    img = Image.open(image_path)
+    img_array = np.array(img)
+    # Get the image dimensions
+    image_width, image_height = img.size
+    # Create figure and axes
+    fig, ax = plt.subplots()
+    # Display the original image
+    ax.imshow(img)
+    # Overlay the grayscale image with transparency
+    ax.imshow(grayscale_image, cmap='Reds', alpha=0.5, extent=[0, image_width, image_height, 0])
+    # Iterate over rows in the DataFrame
+    for index, row in df.iterrows():
+        xmin, ymin, xmax, ymax = row['xmin'], row['ymin'], row['xmax'], row['ymax']
+        confidence, class_label,class_name = row['confidence'], row['class'],row['name']
+        # Convert coordinates to absolute values
+        abs_xmin = xmin * image_width
+        abs_ymin = ymin * image_height
+        abs_width = (xmax - xmin) * image_width
+        abs_height = (ymax - ymin) * image_height
+        # Map bounding box to the grayscale image
+        # Calculate the region of interest in the grayscale image
+        roi_xmin = int(xmin * grayscale_image.shape[1])
+        roi_ymin = int(ymin * grayscale_image.shape[0])
+        roi_xmax = int(xmax * grayscale_image.shape[1])
+        roi_ymax = int(ymax * grayscale_image.shape[0])
+        # Extract the region of interest from the grayscale image
+        roi = grayscale_image[roi_ymin:roi_ymax, roi_xmin:roi_xmax]
+        # Calculate the percentage of nonzero pixels
+        nonzero_percentage = np.count_nonzero(roi) / (roi.shape[0] * roi.shape[1])
+        # If the percentage of nonzero pixels exceeds 10%, collect the bounding box
+        if nonzero_percentage > 0.1:
+            # Add bounding box information to the selected_bboxes list
+            selected_bboxes.append({'xmin': abs_xmin, 'ymin': abs_ymin,'xmax': abs_xmin + abs_width, 'ymax': abs_ymin + abs_height,
+                                    'confidence': confidence, 'class': class_label,'name':class_name})
+            # Create a rectangle patch
+            rect = patches.Rectangle(
+                (abs_xmin, abs_ymin),
+                abs_width,
+                abs_height,
+                linewidth=2,
+                edgecolor='darkgreen',
+                facecolor='none'  # Set facecolor to 'none' for an unfilled rectangle
+            )
+            # Add the rectangle to the axes
+            ax.add_patch(rect)
+            # Add confidence and class label as text
+            text = f'Class: {class_label}'
+            #\nConfidence: {confidence:.2f}'
+            plt.text(abs_xmin, abs_ymin - 10, text, color='black', fontsize=8, bbox=dict(facecolor='white', alpha=0.5))
+    plt.savefig(output_path)
+    plt.close()
+    return selected_bboxes
+
+def plot_bboxes_on_image_neg_female(image_path, df, grayscale_image, output_path):
     selected_bboxes = []
     # Load the original image
     img = Image.open(image_path)
@@ -243,13 +299,15 @@ def plot_bboxes_on_image_neg(image_path, df, grayscale_image, output_path):
             # Add bounding box information to the selected_bboxes list
             selected_bboxes.append({'xmin': abs_xmin, 'ymin': abs_ymin,'xmax': abs_xmin + abs_width, 'ymax': abs_ymin + abs_height,
                                     'confidence': confidence, 'class': class_label,'name':class_name})
+            
+
             # Create a rectangle patch
             rect = patches.Rectangle(
                 (abs_xmin, abs_ymin),
                 abs_width,
                 abs_height,
                 linewidth=2,
-                edgecolor='b',
+                edgecolor='pink',
                 facecolor='none'  # Set facecolor to 'none' for an unfilled rectangle
             )
             # Add the rectangle to the axes
@@ -261,51 +319,111 @@ def plot_bboxes_on_image_neg(image_path, df, grayscale_image, output_path):
     plt.savefig(output_path)
     plt.close()
     return selected_bboxes
+
+def plot_bboxes_on_image_neg_young(image_path, df, grayscale_image, output_path):
+    selected_bboxes = []
+    # Load the original image
+    img = Image.open(image_path)
+    img_array = np.array(img)
+    # Get the image dimensions
+    image_width, image_height = img.size
+    # Create figure and axes
+    fig, ax = plt.subplots()
+    # Display the original image
+    ax.imshow(img)
+    # Overlay the grayscale image with transparency
+    ax.imshow(grayscale_image, cmap='Blues', alpha=0.5, extent=[0, image_width, image_height, 0])
+    # Iterate over rows in the DataFrame
+    for index, row in df.iterrows():
+        xmin, ymin, xmax, ymax = row['xmin'], row['ymin'], row['xmax'], row['ymax']
+        confidence, class_label,class_name = row['confidence'], row['class'],row['name']
+        # Convert coordinates to absolute values
+        abs_xmin = xmin * image_width
+        abs_ymin = ymin * image_height
+        abs_width = (xmax - xmin) * image_width
+        abs_height = (ymax - ymin) * image_height
+        # Map bounding box to the grayscale image
+        # Calculate the region of interest in the grayscale image
+        roi_xmin = int(xmin * grayscale_image.shape[1])
+        roi_ymin = int(ymin * grayscale_image.shape[0])
+        roi_xmax = int(xmax * grayscale_image.shape[1])
+        roi_ymax = int(ymax * grayscale_image.shape[0])
+        # Extract the region of interest from the grayscale image
+        roi = grayscale_image[roi_ymin:roi_ymax, roi_xmin:roi_xmax]
+        # Calculate the percentage of nonzero pixels
+        nonzero_percentage = np.count_nonzero(roi) / (roi.shape[0] * roi.shape[1])
+        # If the percentage of nonzero pixels exceeds 10%, collect the bounding box
+        if nonzero_percentage > 0.1:
+            # Add bounding box information to the selected_bboxes list
+            selected_bboxes.append({'xmin': abs_xmin, 'ymin': abs_ymin,'xmax': abs_xmin + abs_width, 'ymax': abs_ymin + abs_height,
+                                    'confidence': confidence, 'class': class_label,'name':class_name})
+            
+
+            # Create a rectangle patch
+            rect = patches.Rectangle(
+                (abs_xmin, abs_ymin),
+                abs_width,
+                abs_height,
+                linewidth=2,
+                edgecolor='pink',
+                facecolor='none'  # Set facecolor to 'none' for an unfilled rectangle
+            )
+            # Add the rectangle to the axes
+            ax.add_patch(rect)
+            # Add confidence and class label as text
+            text = f'Class: {class_label}'
+            #\nConfidence: {confidence:.2f}'
+            plt.text(abs_xmin, abs_ymin - 10, text, color='black', fontsize=8, bbox=dict(facecolor='white', alpha=0.5))
+    plt.savefig(output_path)
+    plt.close()
+    return selected_bboxes
+
 def get_auto_lang_answer(prediction_class, gender=None, age=None, selected_bboxes_pos=None, selected_bboxes_neg=None, question=''):
     try:
         detected_lang = detect(question)
         language = 'th' if detected_lang == 'th' else 'en'
     except Exception as e:
-        print(f"Language detection failed: {e}")  # Logging the exception
-        language = 'en'  # Default to English if detection fails
-    # Combining tooth parts from both positive and negative bboxes if they exist
-    tooth_parts = []
-    # Check if selected_bboxes_pos is a DataFrame or a list of dictionaries
+        print(f"Language detection failed: {e}")
+        language = 'en'
+
+    tooth_parts_info = []
+
     if selected_bboxes_pos is not None:
         if isinstance(selected_bboxes_pos, pd.DataFrame):
-            tooth_parts.extend(selected_bboxes_pos['name'].tolist())
+            tooth_parts_info.extend(selected_bboxes_pos[['class_label', 'name']].values.tolist())
         elif isinstance(selected_bboxes_pos, list) and all(isinstance(item, dict) for item in selected_bboxes_pos):
-            tooth_parts.extend([item['name'] for item in selected_bboxes_pos])
-    # Repeat the check for selected_bboxes_neg
+            tooth_parts_info.extend([(item['class_label'], item['name']) for item in selected_bboxes_pos])
+
     if selected_bboxes_neg is not None:
         if isinstance(selected_bboxes_neg, pd.DataFrame):
-            tooth_parts.extend(selected_bboxes_neg['name'].tolist())
+            tooth_parts_info.extend(selected_bboxes_neg[['class_label', 'name']].values.tolist())
         elif isinstance(selected_bboxes_neg, list) and all(isinstance(item, dict) for item in selected_bboxes_neg):
-            tooth_parts.extend([item['name'] for item in selected_bboxes_neg])
-    tooth_parts_str = ', '.join(tooth_parts)
-   
-    # Define answers database
+            tooth_parts_info.extend([(item['class_label'], item['name']) for item in selected_bboxes_neg])
+
+    tooth_parts_str = ', '.join([f"{label}-{part}" for label, part in tooth_parts_info])
+
     answers_db = {
         "en": {
             0: "The predicted gender from this panoramic image is {gender}.",
             1: "The estimated age of the individual in this panoramic image is {age} years.",
-            2: "Based on the panoramic image, the predicted gender is {gender}, with attention to the {tooth_part}.",
-            3: "From the panoramic analysis, the estimated age is {age} years, considering the {tooth_part}.",
+            2: "Based on the panoramic image, the predicted gender is {gender}, with attention to the parts: {tooth_parts}.",
+            3: "From the panoramic analysis, the estimated age is {age} years, considering the parts: {tooth_parts}.",
             4: "Sorry, no answer available for this question."
         },
         "th": {
-            0: "เพศที่คาดการณ์ไว้จากภาพถ่ายรังสีพาโนรามานี้คือ {gender}.",
-            1: "อายุที่ประเมินของบุคคลในภาพถ่ายรังสีพาโนรามานี้ได้คือ {age} ปี.",
-            2: "ตามภาพพาโนรามา, เพศที่ทำนายได้คือ {gender}, โดยดูจาก {tooth_part}.",
-            3: "จากการวิเคราะห์ภาพพาโนรามา, อายุที่ประเมินได้คือ {age} ปี, โดยพิจารณาที่ {tooth_part}.",
+            0: "เพศที่ทำนายได้จากภาพถ่ายรังสีพาโนรามานี้คือ {gender}.",
+            1: "อายุที่ประมาณค่าได้ของบุคคลในภาพถ่ายรังสีพาโนรามานี้ได้คือ {age} ปี.",
+            2: "จากภาพถ่ายรังสีพาโนรามา, เพศที่ทำนายได้คือ {gender}, โดยดูจากบริเวณ {tooth_parts}.",
+            3: "จากการวิเคราะห์ภาพถ่ายรังสีพาโนรามา, อายุที่ประมาณค่าได้คือ {age} ปี, โดยดูจากบริเวณ {tooth_parts}.",
             4: "ขออภัย, ไม่มีคำตอบสำหรับคำถามนี้."
         }
     }
-    # Continue with your existing logic
+
     answer_template = answers_db[language].get(prediction_class, "")
-    answer = answer_template.format(gender=gender, age=age, tooth_part=tooth_parts_str)
+    answer = answer_template.format(gender=gender, age=age, tooth_parts=tooth_parts_str)
 
     return answer
+
 
 def classify_question(text, tokenizer, bert_model, random_forest_model):
     inputs = tokenizer(text, return_tensors="tf", max_length=512, truncation=True, padding='max_length')
@@ -357,7 +475,7 @@ def predict():
 
             # Call the cut_image.py script as a subprocess
             subprocess.run(['python', 'index.py', image_path, left_image_path, right_image_path])
-            prediction_class = subprocess.run(['python', 'clf.py', question], capture_output=True, text=True, check=True)
+            #prediction_class = subprocess.run(['python', 'clf.py', question], capture_output=True, text=True, check=True)
 
             #prediction_class = subprocess.run(['python', 'clf.py', question], capture_output=True, text=True, check=True)
             prediction_class = classify_question(question, tokenizer, bert_model, random_forest_model)
@@ -478,8 +596,14 @@ def predict():
             # Assuming grayscale_pos_thresholded and grayscale_neg_thresholded are defined and ready to use
             output_path_pos = os.path.join(app.config['UPLOAD_FOLDER'], 'output_pos.png')
             output_path_neg = os.path.join(app.config['UPLOAD_FOLDER'], 'output_neg.png')
-            selected_bboxes_pos = plot_bboxes_on_image_pos(img, df_yolo_results, grayscale_pos_thresholded, output_path_pos)
-            selected_bboxes_neg = plot_bboxes_on_image_neg(img, df_yolo_results, grayscale_neg_thresholded, output_path_neg)
+            if prediction_class == 2 and gender_ans == 'male':
+                selected_bboxes_pos = plot_bboxes_on_image_pos_male(img, df_yolo_results, grayscale_pos_thresholded, output_path_pos)
+            if prediction_class == 2 and gender_ans == 'female':
+                selected_bboxes_neg = plot_bboxes_on_image_neg_female(img, df_yolo_results, grayscale_pos_thresholded, output_path_pos)
+            if prediction_class == 3 and age_ans <=14 :
+                selected_bboxes_neg = plot_bboxes_on_image_neg_young(img, df_yolo_results, grayscale_neg_thresholded, output_path_neg)
+            if prediction_class == 3 and age_ans > 14 : 
+                selected_bboxes_pos = plot_bboxes_on_image_pos_adult(img, df_yolo_results, grayscale_neg_thresholded, output_path_neg)
             # Convert server paths to web-accessible URLs
             output_url_pos = url_for('uploaded_file', filename='output_pos.png')
             output_url_neg = url_for('uploaded_file', filename='output_neg.png')
@@ -489,7 +613,7 @@ def predict():
         answer = get_auto_lang_answer(prediction_class, gender=gender_or_age, question=question)
         return render_template('predict2.html', image_url=image_url, question=question, answer=answer)
     elif prediction_class == 2:
-        # Assuming 'predictions_highCon_Gender' is defined
+        
         selected_bboxes = selected_bboxes_pos if predictions_highCon_Gender >= 0.5 else selected_bboxes_neg
         output_url = output_url_pos if predictions_highCon_Gender >= 0.5 else output_url_neg
         answer = get_auto_lang_answer(prediction_class, gender=gender_ans, selected_bboxes_pos=selected_bboxes, question=question)

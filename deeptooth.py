@@ -99,15 +99,15 @@ def process_input(images_directory):
 
 def compute_iou(boxA, boxB):
     # Determine the coordinates of the intersection rectangle
-    xA = max(boxA.iloc[0], boxB.iloc[0])
-    yA = max(boxA.iloc[1], boxB.iloc[1])
-    xB = min(boxA.iloc[2], boxB.iloc[2])
-    yB = min(boxA.iloc[3], boxB.iloc[3])
+    xA = max(boxA[0], boxB[0])
+    yA = max(boxA[1], boxB[1])
+    xB = min(boxA[2], boxB[2])
+    yB = min(boxA[3], boxB[3])
     # Compute the area of intersection
     interArea = max(0, xB - xA + 1) * max(0, yB - yA + 1)
     # Compute the area of both the prediction and ground-truth rectangles
-    boxAArea = (boxA.iloc[2] - boxA.iloc[0] + 1) * (boxA.iloc[3] - boxA.iloc[1] + 1)
-    boxBArea = (boxB.iloc[2] - boxB.iloc[0] + 1) * (boxB.iloc[3] - boxB.iloc[1] + 1)
+    boxAArea = (boxA[2] - boxA[0] + 1) * (boxA[3] - boxA[1] + 1)
+    boxBArea = (boxB[2] - boxB[0] + 1) * (boxB[3] - boxB[1] + 1)
     # Compute the intersection over union by taking the intersection
     # area and dividing it by the sum of prediction + ground-truth
     # areas - the interesection area
@@ -130,8 +130,8 @@ def nms_per_class(df, iou_threshold=0.5):
             for j in range(i+1, len(df_class_sorted)):
                 if j in suppressed_indices:
                     continue
-                boxA = df_class_sorted.loc[i, ['xmin', 'ymin', 'xmax', 'ymax']]
-                boxB = df_class_sorted.loc[j, ['xmin', 'ymin', 'xmax', 'ymax']]
+                boxA = df_class_sorted.iloc[i][['xmin', 'ymin', 'xmax', 'ymax']]
+                boxB = df_class_sorted.iloc[j][['xmin', 'ymin', 'xmax', 'ymax']]
                 if compute_iou(boxA, boxB) > iou_threshold:
                     suppressed_indices.add(j)
         # Filter out suppressed detections
@@ -139,7 +139,6 @@ def nms_per_class(df, iou_threshold=0.5):
         # Append results for this class to the main DataFrame
         df_nms = pd.concat([df_nms, df_nms_class], ignore_index=True)
     return df_nms
-
 def detect_yolo(image_path):
     # Load the model
     weights_path = '../Webapp/templates/best.pt'
@@ -488,18 +487,18 @@ def predict():
             grayscale_pos_thresholded[grayscale_pos_thresholded < percentile_95_pos] = 0
             grayscale_neg_thresholded[grayscale_neg_thresholded < percentile_95_neg] = 0
 
-            # Proceed with detection and plotting
-            df_yolo_results = detect_yolo(img)  # Make sure 'detect' returns a DataFrame with YOLO detection results
-            # Assuming grayscale_pos_thresholded and grayscale_neg_thresholded are defined and ready to use
-            output_path_pos = os.path.join(app.config['UPLOAD_FOLDER'], 'output_pos.png')
-            output_path_neg = os.path.join(app.config['UPLOAD_FOLDER'], 'output_neg.png')
+        # Proceed with detection and plotting
+        df_yolo_results = detect_yolo(img)  # Make sure 'detect' returns a DataFrame with YOLO detection results
+        # Assuming grayscale_pos_thresholded and grayscale_neg_thresholded are defined and ready to use
+        output_path_pos = os.path.join(app.config['UPLOAD_FOLDER'], 'output_pos.png')
+        output_path_neg = os.path.join(app.config['UPLOAD_FOLDER'], 'output_neg.png')
 
-            selected_bboxes_pos = plot_bboxes_on_image_pos(img, df_yolo_results, grayscale_pos_thresholded, output_path_pos,prediction_class)
-            selected_bboxes_neg = plot_bboxes_on_image_neg(img, df_yolo_results, grayscale_neg_thresholded, output_path_neg,prediction_class)
-   
-            # Convert server paths to web-accessible URLs
-            output_url_pos = url_for('uploaded_file', filename='output_pos.png')
-            output_url_neg = url_for('uploaded_file', filename='output_neg.png')
+        selected_bboxes_pos = plot_bboxes_on_image_pos(img, df_yolo_results, grayscale_pos_thresholded, output_path_pos,prediction_class)
+        selected_bboxes_neg = plot_bboxes_on_image_neg(img, df_yolo_results, grayscale_neg_thresholded, output_path_neg,prediction_class)
+
+        # Convert server paths to web-accessible URLs
+        output_url_pos = url_for('uploaded_file', filename='output_pos.png')
+        output_url_neg = url_for('uploaded_file', filename='output_neg.png')
         # Depending on the prediction, generate an answer and choose the correct template and parameters
     if prediction_class == 0 or prediction_class == 1:
         gender_or_age = gender_ans if prediction_class == 0 else age_ans

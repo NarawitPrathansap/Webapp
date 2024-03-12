@@ -563,7 +563,10 @@ def predict():
                 shap_values = explainer15_23_gender.shap_values(reshaped_user_uploaded_image)
         elif model == model_15_23 and prediction_class == 3:
                 shap_values = explainer15_23_age.shap_values(reshaped_user_uploaded_image)
-
+        selected_bboxes_pos = None
+        selected_bboxes_neg = None
+        output_url_pos = None
+        output_url_neg = None
         if shap_values is not None:
             shap_values_1 = np.array(shap_values)
             # Perform the processing as before

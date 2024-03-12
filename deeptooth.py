@@ -35,9 +35,14 @@ get_custom_objects().update({
     'Swish': Swish,
     'DropConnect':DropConnect
 })
-model_7_23 = load_model('../Webapp/templates/26_Multi_1e-6_250_Unfreeze.h5')
-model_7_14 = load_model('../Webapp/templates/36_Multi_1e-5_500_Unfreeze.h5')
-model_15_23 = load_model('../Webapp/templates/25_Multi_1e-6_500_Unfreeze.h5')
+# Function to load Keras model with custom objects
+def load_model_with_custom_objects(model_path):
+    return tf.keras.models.load_model(model_path, custom_objects=get_custom_objects())
+
+# Load models with custom objects
+model_7_23 = load_model_with_custom_objects('../Webapp/templates/26_Multi_1e-6_250_Unfreeze.h5')
+model_7_14 = load_model_with_custom_objects('../Webapp/templates/36_Multi_1e-5_500_Unfreeze.h5')
+model_15_23 = load_model_with_custom_objects('../Webapp/templates/25_Multi_1e-6_500_Unfreeze.h5')
 
 # Load your models outside of the request to save loading time
 random_forest_model = load('../Webapp/templates/random_forest.joblib')  # Adjust path as needed

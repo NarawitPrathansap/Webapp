@@ -99,15 +99,15 @@ def process_input(images_directory):
 
 def compute_iou(boxA, boxB):
     # Determine the coordinates of the intersection rectangle
-    xA = max(boxA[0], boxB[0])
-    yA = max(boxA[1], boxB[1])
-    xB = min(boxA[2], boxB[2])
-    yB = min(boxA[3], boxB[3])
+    xA = max(boxA.iloc[0], boxB.iloc[0])
+    yA = max(boxA.iloc[1], boxB.iloc[1])
+    xB = min(boxA.iloc[2], boxB.iloc[2])
+    yB = min(boxA.iloc[3], boxB.iloc[3])
     # Compute the area of intersection
     interArea = max(0, xB - xA + 1) * max(0, yB - yA + 1)
     # Compute the area of both the prediction and ground-truth rectangles
-    boxAArea = (boxA[2] - boxA[0] + 1) * (boxA[3] - boxA[1] + 1)
-    boxBArea = (boxB[2] - boxB[0] + 1) * (boxB[3] - boxB[1] + 1)
+    boxAArea = (boxA.iloc[2] - boxA.iloc[0] + 1) * (boxA.iloc[3] - boxA.iloc[1] + 1)
+    boxBArea = (boxB.iloc[2] - boxB.iloc[0] + 1) * (boxB.iloc[3] - boxB.iloc[1] + 1)
     # Compute the intersection over union by taking the intersection
     # area and dividing it by the sum of prediction + ground-truth
     # areas - the interesection area
@@ -130,8 +130,8 @@ def nms_per_class(df, iou_threshold=0.5):
             for j in range(i+1, len(df_class_sorted)):
                 if j in suppressed_indices:
                     continue
-                boxA = df_class_sorted.iloc[i][['xmin', 'ymin', 'xmax', 'ymax']]
-                boxB = df_class_sorted.iloc[j][['xmin', 'ymin', 'xmax', 'ymax']]
+                boxA = df_class_sorted.loc[i, ['xmin', 'ymin', 'xmax', 'ymax']]
+                boxB = df_class_sorted.loc[j, ['xmin', 'ymin', 'xmax', 'ymax']]
                 if compute_iou(boxA, boxB) > iou_threshold:
                     suppressed_indices.add(j)
         # Filter out suppressed detections
@@ -139,6 +139,7 @@ def nms_per_class(df, iou_threshold=0.5):
         # Append results for this class to the main DataFrame
         df_nms = pd.concat([df_nms, df_nms_class], ignore_index=True)
     return df_nms
+
 def detect_yolo(image_path):
     # Load the model
     weights_path = '../Webapp/templates/best.pt'
@@ -448,6 +449,7 @@ def predict():
         reshaped_user_uploaded_image = np.expand_dims(preprocessed_user_uploaded_image, axis=0)
         # Calculate SHAP values
         #shap_values = explainer15_23_gender.shap_values(reshaped_user_uploaded_image)
+
         shap_values = None
         if model == model_7_14 and prediction_class == 2:
                 shap_values = explainer7_14_gender.shap_values(reshaped_user_uploaded_image)
@@ -457,6 +459,7 @@ def predict():
                 shap_values = explainer15_23_gender.shap_values(reshaped_user_uploaded_image)
         elif model == model_15_23 and prediction_class == 3:
                 shap_values = explainer15_23_age.shap_values(reshaped_user_uploaded_image)
+
 
         if shap_values is not None:
             shap_values_1 = np.array(shap_values)

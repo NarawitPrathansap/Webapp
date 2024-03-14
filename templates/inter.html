@@ -118,7 +118,7 @@
         <div id="upload-container">
             <div id="upload-area">
                 <img src="https://raw.githubusercontent.com/NarawitPrathansap/Webapp/main/templates/upload-image-icon.svg" alt="Upload" class="upload-icon"/>
-                <input type="file" id="image-upload" style="display: none;" name="image" required>
+                <input type="file" accept="image/*" id="image-upload" style="display: none;" name="image" required>
                 <label for="image-upload" style="cursor: pointer;">Click here to upload image</label>
 
                 <div id="file-name"></div>
@@ -130,7 +130,7 @@
     
             <div id="question-area">
                 <input id="question-input" type="text" name="question" placeholder="Ask a question (e.g.,Which is the gender of the person in the picture? )" required input>
-                
+                <div style="color: red;">*limit of tokens = 512</div>
             </div>
         </div>
         <div class="btn-container">

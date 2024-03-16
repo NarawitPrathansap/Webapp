@@ -40,7 +40,7 @@ model_7_14 = load_model('../Webapp/templates/36_Multi_1e-5_500_Unfreeze.h5')
 model_15_23 = load_model('../Webapp/templates/25_Multi_1e-6_500_Unfreeze.h5')
 
 # Load your models outside of the request to save loading time
-random_forest_model = load('../Webapp/templates/random_forest.joblib')  # Adjust path as needed
+random_forest_model = load('../Webapp/templates/logreg_classifier1.joblib')  # Adjust path as needed
 tokenizer = BertTokenizer.from_pretrained('bert-base-multilingual-cased')
 bert_model = TFBertModel.from_pretrained('bert-base-multilingual-cased')
 
@@ -190,7 +190,7 @@ def plot_bboxes_on_image_pos(image_path, df, grayscale_image, output_path,predic
             selected_bboxes.append({'xmin': abs_xmin, 'ymin': abs_ymin,'xmax': abs_xmin + abs_width, 'ymax': abs_ymin + abs_height,
                                     'confidence': confidence, 'class': class_label,'name':class_name})
             # Create a rectangle patch
-            edgecolor = 'aqua' if prediction_class == 2 else 'red'
+            edgecolor = 'deepskyblue' if prediction_class == 2 else 'red'
             rect = patches.Rectangle(
                 (abs_xmin, abs_ymin),
                 abs_width,
@@ -217,7 +217,7 @@ def plot_bboxes_on_image_neg(image_path, df, grayscale_image, output_path,predic
     # Get the image dimensions
     image_width, image_height = img.size
     # Create figure and axes
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(12, 8))
     # Display the original image
     ax.imshow(img)
     # Overlay the grayscale image with transparency
@@ -251,7 +251,7 @@ def plot_bboxes_on_image_neg(image_path, df, grayscale_image, output_path,predic
             
 
             # Create a rectangle patch
-            edgecolor = 'pink' if prediction_class == 2 else 'yellow'
+            edgecolor = 'deeppink' if prediction_class == 2 else 'darkgreen'
             rect = patches.Rectangle(
                 (abs_xmin, abs_ymin),
                 abs_width,

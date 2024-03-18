@@ -500,21 +500,26 @@ def predict():
             output_url_pos = url_for('uploaded_file', filename='output_pos.png')
             output_url_neg = url_for('uploaded_file', filename='output_neg.png')
             # Depending on the prediction, generate an answer and choose the correct template and parameters
-    if prediction_class == 0 or prediction_class == 1:
-        gender_or_age = gender_ans if prediction_class == 0 else age_ans
-        answer = get_auto_lang_answer(prediction_class, gender=gender_or_age, question=question)
+    if prediction_class == 0:  
+        answer = get_auto_lang_answer(prediction_class, gender=gender_ans, question=question)
         return render_template('predict2.html', image_url=image_url, question=question, answer=answer)
+    
+    elif prediction_class == 1:
+        answer = get_auto_lang_answer(prediction_class, age=age_ans, question=question)
+        return render_template('predict2.html', image_url=image_url, question=question, answer=answer)
+
     elif prediction_class == 2:
-        
         selected_bboxes = selected_bboxes_pos if predictions_highCon_Gender >= 0.5 else selected_bboxes_neg
         output_url = output_url_pos if predictions_highCon_Gender >= 0.5 else output_url_neg
         answer = get_auto_lang_answer(prediction_class, gender=gender_ans, selected_bboxes_pos=selected_bboxes, question=question)
         return render_template('predict.html', image_url=image_url, question=question, answer=answer, output_url=output_url)
+    
     elif prediction_class == 3:
         # Assuming 'age_ans' is defined
         output_url = output_url_neg if age_ans <= 14 else output_url_pos
         answer = get_auto_lang_answer(prediction_class, age=age_ans, selected_bboxes_pos=selected_bboxes_pos, question=question)
         return render_template('predict.html', image_url=image_url, question=question, answer=answer, output_url=output_url)
+    
     elif prediction_class == 4:
     # Correctly call `get_auto_lang_answer` and assign its return value to `answer`
         answer = get_auto_lang_answer(prediction_class, question=question)

@@ -190,7 +190,7 @@ def plot_bboxes_on_image_pos(image_path, df, grayscale_image, output_path,predic
             selected_bboxes.append({'xmin': abs_xmin, 'ymin': abs_ymin,'xmax': abs_xmin + abs_width, 'ymax': abs_ymin + abs_height,
                                     'confidence': confidence, 'class': class_label,'name':class_name})
             # Create a rectangle patch
-            edgecolor = 'deepskyblue' if prediction_class == 2 else 'red'
+            edgecolor = 'deepskyblue' if prediction_class == 2 else 'orange'
             rect = patches.Rectangle(
                 (abs_xmin, abs_ymin),
                 abs_width,
@@ -251,7 +251,7 @@ def plot_bboxes_on_image_neg(image_path, df, grayscale_image, output_path,predic
             
 
             # Create a rectangle patch
-            edgecolor = 'deeppink' if prediction_class == 2 else 'darkgreen'
+            edgecolor = 'deeppink' if prediction_class == 2 else 'purple'
             rect = patches.Rectangle(
                 (abs_xmin, abs_ymin),
                 abs_width,

@@ -160,7 +160,7 @@ def plot_bboxes_on_image_pos(image_path, df, grayscale_image, output_path,predic
     # Get the image dimensions
     image_width, image_height = img.size
     # Create figure and axes
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(12, 8))
     # Display the original image
     ax.imshow(img)
     # Overlay the grayscale image with transparency

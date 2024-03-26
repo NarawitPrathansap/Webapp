@@ -204,7 +204,7 @@ def plot_bboxes_on_image_pos(image_path, df, grayscale_image, output_path,predic
             # Add confidence and class label as text
             text = f'Class: {class_label}'
             #\nConfidence: {confidence:.2f}'
-            plt.text(abs_xmin, abs_ymin - 10, text, color='black', fontsize=8, bbox=dict(facecolor='white', alpha=0.5))
+            plt.text(abs_xmin, abs_ymin - 10, text, color='black', fontsize=12, bbox=dict(facecolor='white', alpha=0.5))
     plt.savefig(output_path)
     plt.close()
     return selected_bboxes
@@ -265,7 +265,7 @@ def plot_bboxes_on_image_neg(image_path, df, grayscale_image, output_path,predic
             # Add confidence and class label as text
             text = f'Class: {class_label}'
             #\nConfidence: {confidence:.2f}'
-            plt.text(abs_xmin, abs_ymin - 10, text, color='black', fontsize=8, bbox=dict(facecolor='white', alpha=0.5))
+            plt.text(abs_xmin, abs_ymin - 10, text, color='black', fontsize=12, bbox=dict(facecolor='white', alpha=0.5))
     plt.savefig(output_path)
     plt.close()
     return selected_bboxes

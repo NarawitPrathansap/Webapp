@@ -6,14 +6,13 @@
     <title>DENTAI</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
-        *{
+        * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: "Poppins", sans-serif;
         }
-        body {
-        
+        body {    
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -49,8 +48,6 @@
             border-radius: 20px;
             justify-content: center; /* Ensures content is centered */
         }
-
-
         #question-area {
             border: 1px solid #000;
             padding: 10px; /* Adjust padding if needed */
@@ -112,6 +109,39 @@
             border-radius: 4px;
             cursor: pointer;
         }
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            text-align: left; /* Aligns the text to the left */
+        }
+        ul li {
+            padding: 8px; /* Adjusted padding */
+            border-bottom: 1px solid #ccc;
+            font-size: 12px; /* Decreased font size */
+            max-width: 90%; /* Added to limit the width */
+            word-wrap: break-word; /* Added to wrap long text */
+            overflow: hidden; /* Added to prevent overflow */
+            text-overflow: ellipsis; /* Added to show ellipsis for overflowed text */
+        }
+        ul li:last-child {
+            border-bottom: none; /* Removes border from the last list item */
+        }
+        ul li a {
+            text-decoration: none;
+            color: #333; /* Adjusts the color of the list item text */
+            display: block; /* Makes the list item text block-level */
+            padding: 5px 0; /* Adds padding to the list item text */
+        }
+        ul li a:hover {
+            background-color: #f9f9f9; /* Changes background color on hover */
+        }
+        #question-header {
+            font-size: 12px; /* Adjust as needed */
+            font-weight: bold; /* Optionally bold */
+            margin-bottom: 10px; /* Adjust spacing */
+            text-align: left;
+        }
     </style>
 </head>
 <body>
@@ -130,12 +160,18 @@
                 <div id="image-preview-container" style="display: none;">
                     <img id="image-preview" alt="Image preview" />
                 </div>
-                
             </div>
     
             <div id="question-area">
-                
                 <input  id="question-input" name="question" placeholder="Ask a question (e.g.,Which is the gender of the person in the picture? )" required></input>
+            	<div id="question-header">Recommended questions</div>
+                <ul>
+                    <li><a href="#" onclick="fillInput('From these panoramic radiographs of the teeth, which is the gender of the person in the picture?')">From these panoramic radiographs of the teeth, which is the gender of the person in the picture?</a></li>
+                    <li><a href="#" onclick="fillInput('How old is this person based on these panoramic radiographs of their teeth?')">How old is this person based on these panoramic radiographs of their teeth?</a></li>
+                    <li><a href="#" onclick="fillInput('What is the gender of the person in this picture based on these panoramic radiographs of their teeth?, Where is it considered?')">What is the gender of the person in this picture based on these panoramic radiographs of their teeth?, Where is it considered?</a></li>
+                    <li><a href="#" onclick="fillInput('How old of the person in this picture based on these panoramic radiographs of their teeth?, Where is it considered?')">How old of the person in this picture based on these panoramic radiographs of their teeth?, Where is it considered?</a></li>
+               
+                </ul>
                 <div style="color: red;">*limit of tokens = 512</div>
             </div>
         </div>
@@ -143,42 +179,43 @@
             <input type="submit" id="upload-button" class="btn" value="Upload now">
         </div>
     </form>
-
-
-<script>
-    document.getElementById('image-upload').addEventListener('change', function(event) {
-        const fileInfo = event.target.files[0];
-        if (fileInfo) {
-            // Display the file name
-            document.getElementById('file-name').textContent = `File name: ${fileInfo.name}`;
-
-            // Hide the drag and drop or click to upload message
-            document.getElementById('upload-area').querySelector('.upload-icon').style.display = 'none'; // Hides the upload icon
-            const uploadInstructions = document.getElementById('upload-area').querySelectorAll('div:not(#file-name), label');
-            uploadInstructions.forEach(element => element.style.display = 'none'); // Hides elements except for the file name display
-
-            // Prepare to display the image preview
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                // Ensure the preview container is visible
-                const previewContainer = document.getElementById('image-preview-container');
-                previewContainer.style.display = 'block';
-
-                // Clear previous images if any, to replace them with the new one
-                previewContainer.innerHTML = '';
-
-                // Create and append the image element for preview
-                const img = document.createElement('img');
-                img.setAttribute('id', 'image-preview'); // Assign an ID to the image for styling or further manipulation
-                img.src = e.target.result;
-                img.style.width = '100%'; // Adjust width as needed
-                img.style.height = 'auto'; // Maintain aspect ratio
-                previewContainer.appendChild(img);
-            };
-            reader.readAsDataURL(fileInfo);
+    <script>
+        function fillInput(question) {
+            document.getElementById('question-input').value = question;
         }
-    });
 
+        document.getElementById('image-upload').addEventListener('change', function(event) {
+            const fileInfo = event.target.files[0];
+            if (fileInfo) {
+                // Display the file name
+                document.getElementById('file-name').textContent = `File name: ${fileInfo.name}`;
+
+                // Hide the drag and drop or click to upload message
+                document.getElementById('upload-area').querySelector('.upload-icon').style.display = 'none'; // Hides the upload icon
+                const uploadInstructions = document.getElementById('upload-area').querySelectorAll('div:not(#file-name), label');
+                uploadInstructions.forEach(element => element.style.display = 'none'); // Hides elements except for the file name display
+
+                // Prepare to display the image preview
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // Ensure the preview container is visible
+                    const previewContainer = document.getElementById('image-preview-container');
+                    previewContainer.style.display = 'block';
+
+                    // Clear previous images if any, to replace them with the new one
+                    previewContainer.innerHTML = '';
+
+                    // Create and append the image element for preview
+                    const img = document.createElement('img');
+                    img.setAttribute('id', 'image-preview'); // Assign an ID to the image for styling or further manipulation
+                    img.src = e.target.result;
+                    img.style.width = '100%'; // Adjust width as needed
+                    img.style.height = 'auto'; // Maintain aspect ratio
+                    previewContainer.appendChild(img);
+                };
+                reader.readAsDataURL(fileInfo);
+            }
+        });
     </script>
 </body>
 </html>
